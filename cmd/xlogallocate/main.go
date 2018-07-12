@@ -60,8 +60,11 @@ func main() {
 				Value: options.Mongo.DB + "." + collection,
 			},
 			bson.DocElem{
-				Name:  "key",
-				Value: "$hashed:timestamp",
+				Name: "key",
+				Value: bson.D{bson.DocElem{
+					Name:  "timestamp",
+					Value: "hashed",
+				}},
 			},
 		}, nil); err != nil {
 			log.Println("failed to shard collection:", collection, err)
