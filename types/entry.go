@@ -12,6 +12,9 @@ var (
 	timestampFormat = "2006/01/02 15:04:05.000"
 	linePattern     = regexp.MustCompile(`^\[(\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2}\.\d{3})\]`)
 	cridPattern     = regexp.MustCompile(`CRID\[([0-9a-zA-Z]+)\]`)
+
+	// IndexedFields fields needed to be indexed
+	IndexedFields = []string{"timestamp", "hostname", "env", "project", "topic", "crid"}
 )
 
 // BeatInfo beat field in a event
