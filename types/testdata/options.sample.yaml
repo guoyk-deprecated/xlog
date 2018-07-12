@@ -1,0 +1,9 @@
+redis:
+  urls:
+    - 'redis://127.0.0.1:6379'
+    - 'redis://127.0.0.1:6379'
+  key: 'xlog'
+mongo:
+  url: 'mongodb://127.0.0.1:27017'
+  db: 'xlog'
+  collection: 'xlog'

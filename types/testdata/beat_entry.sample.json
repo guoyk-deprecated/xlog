@@ -1,0 +1,19 @@
+{
+    "@timestamp": "2018-07-10T18:47:17.923Z",
+    "@metadata": {
+        "beat": "",
+        "type": "doc",
+        "version": "6.2.4"
+    },
+    "offset": 63247334,
+    "message": "[2018/07/11 02:47:17.745] CRID[3e276bcb3e2dbdac] [http-apr-8080-exec-426] INFO  c.p.common.log.LogContorllerAspect - fdsfdsafsdsa ",
+    "prospector": {
+        "type": "log"
+    },
+    "beat": {
+        "name": "customer.api.04",
+        "hostname": "customer.api.04",
+        "version": "6.2.4"
+    },
+    "source": "/app/tomcat8.5.16/logs/prod/access/eshop-api-customer.log"
+}
