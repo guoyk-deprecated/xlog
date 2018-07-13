@@ -97,28 +97,28 @@ func main() {
 				log.Println("failed to convert")
 				continue
 			}
+			collection := fmt.Sprintf(
+				"%s%04d%02d%02d",
+				options.Mongo.Collection,
+				le.Timestamp.Year(),
+				le.Timestamp.Month(),
+				le.Timestamp.Day(),
+			)
+			count++
+			log.Printf("progress: %012d / %012d", count, total)
+			if debugMode {
+				log.Println(">>> WILL INSERT", collection)
+				for k, v := range le.ToBSON() {
+					log.Println("  ", k, "=", v)
+				}
+			} else {
+				if err = mDB.C(collection).Insert(le.ToBSON()); err != nil {
+					log.Println(err)
+				}
+			}
 		}
-		collection := fmt.Sprintf(
-			"%s%04d%02d%02d",
-			options.Mongo.Collection,
-			le.Timestamp.Year(),
-			le.Timestamp.Month(),
-			le.Timestamp.Day(),
-		)
-		count++
-		log.Printf("progress: %012d / %012d", count, total)
-		if debugMode {
-			log.Println("will insert", collection)
-			for k, v := range le.ToBSON() {
-				log.Println("  ", k, "=", v)
-			}
-			if count > 100 {
-				break
-			}
-		} else {
-			if err = mDB.C(collection).Insert(le.ToBSON()); err != nil {
-				log.Println(err)
-			}
+		if debugMode && count > 100 {
+			break
 		}
 	}
 }
