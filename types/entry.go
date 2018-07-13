@@ -108,3 +108,28 @@ func (l LogEntry) ToBSON() bson.M {
 		"message":   l.Message,
 	}
 }
+
+// ESEntry legacy elasticsearch entry in source field
+type ESEntry struct {
+	Topic     string   `json:"xlog_type"`
+	Env       string   `json:"xlog_env"`
+	Project   string   `json:"xlog_project"`
+	Timestamp string   `json:"timestamp"`
+	Message   string   `json:"message"`
+	Beat      BeatInfo `json:"beat"`
+	Crid      string   `json:"crid"`
+}
+
+// Convert convert ESEntry to LogEntry
+func (e ESEntry) Convert(le *LogEntry) (err error) {
+	if le.Timestamp, err = time.Parse(timestampFormat, e.Timestamp); err != nil {
+		return
+	}
+	le.Topic = e.Topic
+	le.Env = e.Env
+	le.Project = e.Project
+	le.Message = e.Message
+	le.Hostname = e.Beat.Hostname
+	le.Crid = e.Crid
+	return
+}
