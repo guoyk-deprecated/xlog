@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"flag"
-	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -13,11 +12,11 @@ import (
 
 	"github.com/globalsign/mgo"
 	"github.com/go-redis/redis"
-	"github.com/yankeguo/xlog/types"
+	"github.com/yankeguo/xlog"
 )
 
 var (
-	options types.Options
+	options xlog.Options
 
 	shutdownFlag  = false             // flag for shutdown
 	shutdownGroup = &sync.WaitGroup{} // WaitGroup for shutdown complete
@@ -30,7 +29,7 @@ func main() {
 
 	// read options file
 	var err error
-	if err = types.ReadOptionsFile(optionsFile, &options); err != nil {
+	if err = xlog.ReadOptionsFile(optionsFile, &options); err != nil {
 		panic(err)
 	}
 
@@ -90,8 +89,8 @@ func drainRedis(rURL string) (err error) {
 			break
 		}
 		// variables
-		var bEntry types.BeatEntry
-		var lEntry types.LogEntry
+		var bEntry xlog.BeatEntry
+		var lEntry xlog.LogEntry
 		// blpop redis list element, timeout 2 seconds
 		var eStrs []string
 		if eStrs, err = rClient.BLPop(
@@ -117,14 +116,8 @@ func drainRedis(rURL string) (err error) {
 				continue
 			}
 			// decide collection name
-			var collectionName = fmt.Sprintf(
-				"%s%04d%02d%02d",
-				options.Mongo.Collection,
-				lEntry.Timestamp.Year(),
-				lEntry.Timestamp.Month(),
-				lEntry.Timestamp.Day(),
-			)
-			if err = mDB.C(collectionName).Insert(lEntry.ToBSON()); err != nil {
+			var cName = lEntry.CollectionName(options.Mongo.Collection)
+			if err = mDB.C(cName).Insert(lEntry.ToBSON()); err != nil {
 				// RPUSH remaining strings
 				rClient.RPush(options.Redis.Key, eStr[i:])
 				return

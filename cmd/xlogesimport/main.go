@@ -11,12 +11,11 @@ import (
 
 	"github.com/globalsign/mgo"
 	"github.com/olivere/elastic"
-
-	"github.com/yankeguo/xlog/types"
+	"github.com/yankeguo/xlog"
 )
 
 var (
-	options types.Options
+	options xlog.Options
 
 	esIndex    string
 	esEndpoint string
@@ -43,7 +42,7 @@ func main() {
 	var err error
 
 	// read options file
-	if err = types.ReadOptionsFile(optionsFile, &options); err != nil {
+	if err = xlog.ReadOptionsFile(optionsFile, &options); err != nil {
 		panic(err)
 	}
 
@@ -76,8 +75,8 @@ func main() {
 	scroll := esClient.Scroll(esIndex)
 
 	var result *elastic.SearchResult
-	var ee types.ESEntry
-	var le types.LogEntry
+	var ee xlog.ESEntry
+	var le xlog.LogEntry
 	var count int64
 	for {
 		result, err = scroll.Do(ctx)

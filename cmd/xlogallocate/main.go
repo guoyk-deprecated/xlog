@@ -6,15 +6,13 @@ import (
 	"log"
 	"time"
 
-	"github.com/globalsign/mgo/bson"
-
 	"github.com/globalsign/mgo"
-
-	"github.com/yankeguo/xlog/types"
+	"github.com/globalsign/mgo/bson"
+	"github.com/yankeguo/xlog"
 )
 
 var (
-	options types.Options
+	options xlog.Options
 
 	allocateNextYear bool
 )
@@ -27,7 +25,7 @@ func main() {
 
 	// read options file
 	var err error
-	if err = types.ReadOptionsFile(optionsFile, &options); err != nil {
+	if err = xlog.ReadOptionsFile(optionsFile, &options); err != nil {
 		panic(err)
 	}
 
@@ -70,7 +68,7 @@ func main() {
 			log.Println("failed to shard collection:", collection, err)
 		}
 		// index
-		for _, field := range types.IndexedFields {
+		for _, field := range xlog.IndexedFields {
 			if err = mClient.DB(options.Mongo.DB).C(collection).EnsureIndex(mgo.Index{
 				Key:        []string{field},
 				Background: true,

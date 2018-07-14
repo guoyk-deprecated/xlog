@@ -1,6 +1,7 @@
-package types
+package xlog
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
 	"time"
@@ -94,6 +95,17 @@ type LogEntry struct {
 	Topic     string
 	Crid      string
 	Message   string
+}
+
+// CollectionName returns the collection to insert
+func (l LogEntry) CollectionName(pfx string) string {
+	return fmt.Sprintf(
+		"%s%04d%02d%02d",
+		pfx,
+		l.Timestamp.Year(),
+		l.Timestamp.Month(),
+		l.Timestamp.Day(),
+	)
 }
 
 // ToBSON convert to bson.M
