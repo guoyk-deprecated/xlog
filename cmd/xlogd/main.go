@@ -118,6 +118,8 @@ func beaterRoutine(redisURL string) (err error) {
 		}
 		// insert document
 		if err = db.Insert(le); err != nil {
+			// resend with RPUSH
+			bt.Recover(be)
 			// stop on failed
 			return
 		}

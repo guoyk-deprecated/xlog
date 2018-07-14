@@ -71,3 +71,13 @@ func (b *Beater) NextEvent(be *BeatEntry) (err error) {
 	}
 	return
 }
+
+// Recover requeue a beat entry with RPUSH
+func (b *Beater) Recover(be BeatEntry) {
+	var err error
+	var buf []byte
+	if buf, err = json.Marshal(be); err != nil {
+		return
+	}
+	b.Client.RPush(b.Key, string(buf))
+}
