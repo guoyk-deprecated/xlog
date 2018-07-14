@@ -2,6 +2,7 @@ package xlog
 
 import (
 	"errors"
+	"flag"
 	"io/ioutil"
 
 	"gopkg.in/yaml.v2"
@@ -13,6 +14,10 @@ type Options struct {
 	Redis RedisOptions `yaml:"redis"`
 	// Mongo mongo options
 	Mongo MongoOptions `yaml:"mongo"`
+	// Verbose verbose mode
+	Verbose bool `yaml:"verbose"`
+	// Dev dev mode
+	Dev bool `yaml:"dev"`
 }
 
 // RedisOptions redis options
@@ -67,6 +72,33 @@ func ReadOptionsFile(file string, opt *Options) (err error) {
 	if len(opt.Mongo.Collection) == 0 {
 		err = errors.New("no mongo collection in config")
 		return
+	}
+	return
+}
+
+// ParseOptionsFlag read options from command line flag
+func ParseOptionsFlag(opt *Options) (err error) {
+	var (
+		file    string
+		verbose bool
+		dev     bool
+	)
+	flag.StringVar(&file, "c", "/etc/xlog.yml", "options file")
+	flag.BoolVar(&verbose, "verbose", false, "verbose mode, overriding config file")
+	flag.BoolVar(&dev, "dev", false, "dev mode, overrding config file")
+	flag.Parse()
+
+	// read options file
+	if err = ReadOptionsFile(file, opt); err != nil {
+		return
+	}
+
+	// override values
+	if verbose {
+		opt.Verbose = true
+	}
+	if dev {
+		opt.Dev = true
 	}
 	return
 }

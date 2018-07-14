@@ -1,7 +1,6 @@
 package xlog
 
 import (
-	"fmt"
 	"regexp"
 	"strings"
 	"time"
@@ -35,12 +34,17 @@ type BeatEntry struct {
 
 // Convert decode a BeatEntry into a LogEntry
 func (b BeatEntry) Convert(le *LogEntry) (ok bool) {
+	// clear
+	*le = LogEntry{}
+	// decode message field
 	if ok = decodeMessage(b.Message, le); !ok {
 		return
 	}
+	// decode source field
 	if ok = decodeSource(b.Source, le); !ok {
 		return
 	}
+	// assign hostname
 	le.Hostname = b.Beat.Hostname
 	return true
 }
@@ -95,17 +99,6 @@ type LogEntry struct {
 	Topic     string
 	Crid      string
 	Message   string
-}
-
-// CollectionName returns the collection to insert
-func (l LogEntry) CollectionName(pfx string) string {
-	return fmt.Sprintf(
-		"%s%04d%02d%02d",
-		pfx,
-		l.Timestamp.Year(),
-		l.Timestamp.Month(),
-		l.Timestamp.Day(),
-	)
 }
 
 // ToBSON convert to bson.M

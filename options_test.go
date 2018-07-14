@@ -17,4 +17,7 @@ func TestReadOptionsFile(t *testing.T) {
 	if opt.Mongo.DB != "xlog" {
 		t.Fatal("failed")
 	}
+	if !opt.Verbose {
+		t.Fatal("failed")
+	}
 }

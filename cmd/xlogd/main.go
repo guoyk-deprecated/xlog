@@ -1,143 +1,141 @@
 package main
 
 import (
-	"encoding/json"
-	"flag"
 	"log"
 	"os"
 	"os/signal"
 	"sync"
+	"sync/atomic"
 	"syscall"
 	"time"
 
-	"github.com/globalsign/mgo"
-	"github.com/go-redis/redis"
 	"github.com/yankeguo/xlog"
 )
 
 var (
-	options xlog.Options
+	options xlog.Options // options
 
-	shutdownFlag  = false             // flag for shutdown
+	shutdownMark  = false             // mark for shutdown
 	shutdownGroup = &sync.WaitGroup{} // WaitGroup for shutdown complete
+
+	counter uint64 // number of entries processed
 )
 
 func main() {
-	var optionsFile string
-	flag.StringVar(&optionsFile, "c", "/etc/xlog.yml", "config file")
-	flag.Parse()
-
-	// read options file
+	// options flag
 	var err error
-	if err = xlog.ReadOptionsFile(optionsFile, &options); err != nil {
+	if err = xlog.ParseOptionsFlag(&options); err != nil {
 		panic(err)
 	}
 
 	// create goroutines for each redis url
 	for _, url := range options.Redis.URLs {
-		go drainRedisWithRetry(url)
+		go beaterRoutineLoop(url)
 	}
+
+	// create goroutine for counter reporting
+	go reportRoutine()
 
 	// wait for SIGINT or SIGTERM
 	shutdown := make(chan os.Signal, 1)
 	signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM)
 	<-shutdown
-	shutdownFlag = true
+	shutdownMark = true
 
 	// wait for all goroutines complete
 	log.Println("exiting...")
 	shutdownGroup.Wait()
 }
 
-func drainRedisWithRetry(rURL string) {
+func beaterRoutineLoop(redisURL string) {
 	var err error
 	for {
-		if err = drainRedis(rURL); err != nil {
-			log.Println("error occured for", rURL, ":", err)
+		if err = beaterRoutine(redisURL); err != nil {
+			log.Println("subroutine failed :", redisURL, ":", err)
 		}
-		if shutdownFlag {
+		if shutdownMark {
 			break
 		}
 		time.Sleep(time.Second * 2)
 	}
 }
 
-func drainRedis(rURL string) (err error) {
-	log.Println("routine created", rURL)
-	defer log.Println("routine exited", rURL)
+func beaterRoutine(redisURL string) (err error) {
+	log.Println("subroutine created:", redisURL)
+	defer log.Println("subroutine exited:", redisURL)
 	// maintain shutdown group
 	shutdownGroup.Add(1)
 	defer shutdownGroup.Done()
-	// redis client
-	var rClient *redis.Client
-	if rClient, err = createRedisClient(rURL); err != nil {
+	// beater
+	var bt *xlog.Beater
+	if bt, err = xlog.DialBeater(redisURL, options); err != nil {
 		return
 	}
-	defer rClient.Close()
-	// mongo client
-	var mClient *mgo.Session
-	if mClient, err = mgo.Dial(options.Mongo.URL); err != nil {
+	defer bt.Close()
+	// database
+	var db *xlog.Database
+	if db, err = xlog.DialDatabase(options); err != nil {
 		return
 	}
-	defer mClient.Close()
-	// mongo database instance
-	mDB := mClient.DB(options.Mongo.DB)
+	defer db.Close()
+	// variables
+	var (
+		be xlog.BeatEntry
+		le xlog.LogEntry
+	)
 	// main loop
 	for {
-		// exit if shutdown flag is set
-		if shutdownFlag {
-			break
+		// check shutdown flag
+		if shutdownMark {
+			return nil
 		}
-		// variables
-		var bEntry xlog.BeatEntry
-		var lEntry xlog.LogEntry
-		// blpop redis list element, timeout 2 seconds
-		var eStrs []string
-		if eStrs, err = rClient.BLPop(
-			time.Second*3,
-			options.Redis.Key,
-		).Result(); err != nil && err != redis.Nil {
-			err = nil
-			return
-		}
-		// continue if empty list
-		if len(eStrs) == 0 {
-			continue
-		}
-		// for list element
-		for i, eStr := range eStrs {
-			// unmarshal JSON
-			if err = json.Unmarshal([]byte(eStr), &bEntry); err != nil {
-				err = nil
+		// read next beat event
+		if err = bt.NextEvent(&be); err != nil {
+			if err == xlog.ErrBeaterTimeout {
+				// timeout is normal
 				continue
-			}
-			// convert BeatEntry to LogEntry
-			if !bEntry.Convert(&lEntry) {
+			} else if err == xlog.ErrBeaterMalformed {
+				if options.Verbose {
+					log.Println("non-JSON beat event detected")
+				}
+				// ignore malformed
 				continue
-			}
-			// decide collection name
-			var cName = lEntry.CollectionName(options.Mongo.Collection)
-			if err = mDB.C(cName).Insert(lEntry.ToBSON()); err != nil {
-				// RPUSH remaining strings
-				rClient.RPush(options.Redis.Key, eStr[i:])
+			} else {
+				// redis went wrong, stop subroutine
 				return
 			}
 		}
+		// convert beat entry to log entry
+		if !be.Convert(&le) {
+			if options.Verbose {
+				log.Println("failed to convert beat event:")
+				log.Println("  beat.hostname =", be.Beat.Hostname)
+				log.Println("  source        =", be.Source)
+				log.Println("  message       =", be.Message)
+			}
+			// ignore on failed
+			continue
+		}
+		// insert document
+		if err = db.Insert(le); err != nil {
+			// stop on failed
+			return
+		}
+		// increase counter
+		atomic.AddUint64(&counter, 1)
 	}
-	return
 }
 
-// create a redis client with server pinged
-func createRedisClient(url string) (rClient *redis.Client, err error) {
-	var rOpt *redis.Options
-	if rOpt, err = redis.ParseURL(url); err != nil {
-		// panic if url is malformed
-		panic(err)
+func reportRoutine() {
+	// period
+	d := time.Minute * 5
+	if options.Verbose {
+		d = time.Second * 5
 	}
-	// create redis client and ping
-	rClient = redis.NewClient(rOpt)
-	if err = rClient.Ping().Err(); err != nil {
-		return
+	// ticker
+	t := time.NewTicker(d)
+	for {
+		<-t.C
+		log.Println("events emitted:", counter)
 	}
-	return
 }

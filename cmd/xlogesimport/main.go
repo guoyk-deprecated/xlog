@@ -19,17 +19,13 @@ var (
 
 	esIndex    string
 	esEndpoint string
-	debugMode  bool
 )
 
 func main() {
 	ctx := context.Background()
 
-	var optionsFile string
-	flag.StringVar(&optionsFile, "c", "/etc/xlog.yml", "config file")
 	flag.StringVar(&esIndex, "esindex", "", "elasticsearch index to import")
 	flag.StringVar(&esEndpoint, "esendpoint", "http://127.0.0.1:9200", "elasticsearch endpoint")
-	flag.BoolVar(&debugMode, "debug", false, "enable debug mode")
 	flag.Parse()
 
 	if len(esIndex) == 0 {
@@ -42,7 +38,7 @@ func main() {
 	var err error
 
 	// read options file
-	if err = xlog.ReadOptionsFile(optionsFile, &options); err != nil {
+	if err = xlog.ParseOptionsFlag(&options); err != nil {
 		panic(err)
 	}
 
@@ -105,7 +101,7 @@ func main() {
 			)
 			count++
 			log.Printf("progress: %012d / %012d", count, total)
-			if debugMode {
+			if options.Dev {
 				log.Println(">>> WILL INSERT", collection)
 				for k, v := range le.ToBSON() {
 					log.Println("  ", k, "=", v)
@@ -116,7 +112,7 @@ func main() {
 				}
 			}
 		}
-		if debugMode && count > 100 {
+		if options.Dev && count > 100 {
 			break
 		}
 	}
