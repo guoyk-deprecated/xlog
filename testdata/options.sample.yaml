@@ -8,3 +8,6 @@ mongo:
   url: 'mongodb://127.0.0.1:27017'
   db: 'xlog'
   collection: 'xlog'
+web:
+  host: '127.0.0.1'
+  port: 4000

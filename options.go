@@ -14,6 +14,8 @@ type Options struct {
 	Redis RedisOptions `yaml:"redis"`
 	// Mongo mongo options
 	Mongo MongoOptions `yaml:"mongo"`
+	// Web web options
+	Web WebOptions `yaml:"web"`
 	// Verbose verbose mode
 	Verbose bool `yaml:"verbose"`
 	// Dev dev mode
@@ -36,6 +38,14 @@ type MongoOptions struct {
 	DB string `yaml:"db"`
 	// Collection mongo collection name
 	Collection string `yaml:"collection"`
+}
+
+// WebOptions web options
+type WebOptions struct {
+	// Host host to bind
+	Host string `yaml:"host"`
+	// Port port to listen
+	Port string `yaml:"port"`
 }
 
 // ReadOptionsFile load options from file
@@ -72,6 +82,12 @@ func ReadOptionsFile(file string, opt *Options) (err error) {
 	if len(opt.Mongo.Collection) == 0 {
 		err = errors.New("no mongo collection in config")
 		return
+	}
+	if len(opt.Web.Host) == 0 {
+		opt.Web.Host = "127.0.0.1"
+	}
+	if len(opt.Web.Port) == 0 {
+		opt.Web.Port = "3000"
 	}
 	return
 }
