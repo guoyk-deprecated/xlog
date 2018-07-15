@@ -156,11 +156,11 @@
             <hr />
         </div>
         {{ end }} {{ else }}
-        <tr>
-            <td class="text-center result-meta">
+        <div class="row text-center">
+            <div class="col result-meta">
                 今日共 {{.CollectionTotalCount}} 条记录，没有查询到符合条件的记录
-            </td>
-        </tr>
+            </div>
+        </div>
         {{ end }}
     </div>
 

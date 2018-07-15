@@ -84,7 +84,7 @@ func (q *Query) Execute(d *Database, t time.Time, ret *[]LogEntry) error {
 	if q.Begin.IsZero() || q.End.IsZero() {
 		sort = "-" + sort
 	}
-	return c.Find(p).Sort(sort).Limit(500).All(ret)
+	return c.Find(p).Sort(sort).Limit(200).All(ret)
 }
 
 // Count count against mongodb, a date must be specified
