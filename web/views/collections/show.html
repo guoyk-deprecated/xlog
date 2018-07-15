@@ -6,12 +6,9 @@
     <meta charset="UTF-8">
     <meta name="canonical-date" content="{{.CollectionDate}}" />
     <meta name="canonical-query" content="{{.Query.Encode}}" />
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.0/css/all.css" integrity="sha384-lKuwvrZot6UHsBSfcMvOkWwlCMgc0TaWr+30HWe3a4ltaBwTZhyTEggF5tJv8tbt"
-        crossorigin="anonymous">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/css/bootstrap.min.css" integrity="sha384-Smlep5jCw/wG7hdkwQ/Z5nLIefveQRIY9nfy6xoR1uRYBtpZgI6339F5dgvm/e9B"
-        crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/css/bootstrap-datepicker.min.css"
-        integrity="sha256-JDBcnYeV19J14isGd3EtnsCQK05d8PczJ5+fvEvBJvI=" crossorigin="anonymous" />
+    <link href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" crossorigin="anonymous">
+    <link href="https://cdn.bootcss.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <link href="https://cdn.bootcss.com/bootstrap-datepicker/1.8.0/css/bootstrap-datepicker.min.css" rel="stylesheet" crossorigin="anonymous">
     <style>
         body {
             padding-top: 56px;
@@ -38,13 +35,13 @@
         }
 
         span.log-meta {
-            margin-right: 0.6rem;
+            margin-right: 0.5rem;
             font-family: monospace;
         }
 
         div.log-entry {
-            padding-top: 0.6rem;
-            padding-bottom: 0.6rem;
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
         }
 
         div.result-meta {
@@ -61,13 +58,13 @@
 <body>
     <nav class="navbar navbar-primary bg-light fixed-top">
         <a href="#" id="date-selector" class="navbar-brand" data-date="{{.CollectionDate}}">
-            <i class="fas fa-calendar-alt"></i>&nbsp;{{.CollectionDate}}
+            <i class="fa fa-calendar"></i>&nbsp;{{.CollectionDate}}
         </a>
         <form class="form-inline" method="GET">
             <div class="input-group input-group-sm">
                 <div class="input-group-prepend">
                     <div class="input-group-text form-control-sm">
-                        <i class="fas fa-clock"></i>
+                        <i class="fa fa-clock-o"></i>
                     </div>
                 </div>
                 <input style="width: 10rem;" class="form-control form-control-sm mr-sm-2 {{if .Query.TimeFormatted}}is-valid{{end}}" type="text"
@@ -76,7 +73,7 @@
             <div class="input-group input-group-sm">
                 <div class="input-group-prepend">
                     <div class="input-group-text form-control-sm">
-                        <i class="fas fa-id-card"></i>
+                        <i class="fa fa-id-card"></i>
                     </div>
                 </div>
                 <input style="width: 6rem;" class="form-control form-control-sm mr-sm-2 {{if .Query.Crid}}is-valid{{end}}" type="text" name="crid"
@@ -85,7 +82,7 @@
             <div class="input-group input-group-sm">
                 <div class="input-group-prepend">
                     <div class="input-group-text form-control-sm">
-                        <i class="fas fa-bookmark"></i>
+                        <i class="fa fa-dashboard"></i>
                     </div>
                 </div>
                 <input style="width: 6rem;" class="form-control form-control-sm mr-sm-2 {{if .Query.Env}}is-valid{{end}}" type="text" name="env"
@@ -94,7 +91,7 @@
             <div class="input-group input-group-sm">
                 <div class="input-group-prepend">
                     <div class="input-group-text form-control-sm">
-                        <i class="fas fa-tachometer-alt"></i>
+                        <i class="fa fa-cubes"></i>
                     </div>
                 </div>
                 <input style="width: 6rem;" class="form-control form-control-sm mr-sm-2 {{if .Query.Project}}is-valid{{end}}" type="text"
@@ -103,7 +100,7 @@
             <div class="input-group input-group-sm">
                 <div class="input-group-prepend">
                     <div class="input-group-text form-control-sm">
-                        <i class="fas fa-folder-open"></i>
+                        <i class="fa fa-compass"></i>
                     </div>
                 </div>
                 <input style="width: 6rem;" class="form-control form-control-sm mr-sm-2 {{if .Query.Topic}}is-valid{{end}}" type="text" name="topic"
@@ -112,7 +109,7 @@
             <div class="input-group input-group-sm">
                 <div class="input-group-prepend">
                     <div class="input-group-text form-control-sm">
-                        <i class="fas fa-server"></i>
+                        <i class="fa fa-server"></i>
                     </div>
                 </div>
                 <input style="width: 6rem;" class="form-control form-control-sm mr-sm-2 {{if .Query.Hostname}}is-valid{{end}}" type="text"
@@ -126,7 +123,7 @@
         {{ if .Results }}
         <div class="row text-center">
             <div class="col result-meta">
-                今日共 {{.CollectionTotalCount}} 条记录，查询到 {{.QueryCount}} 条符合条件的记录
+                今日共 {{.CollectionTotalCount}} 条记录，查询到 {{.QueryCount}} 条，列出 {{len .Results}} 条
             </div>
             <hr />
         </div>
@@ -134,23 +131,22 @@
         <div class="row">
             <div class="col log-entry">
                 <span class="log-meta">
-                    <i class="fas fa-clock"></i>&nbsp;
-                    <b>{{ .Time }}</b>
+                    <i class="fa fa-clock-o"></i>&nbsp;{{ .Time }}
                 </span>
                 <span class="log-meta">
-                    <i class="fas fa-id-card"></i>&nbsp;{{ .Crid }}&nbsp;
+                    <i class="fa fa-id-card"></i>&nbsp;{{ .Crid }}
                 </span>
                 <span class="log-meta">
-                    <i class="fas fa-bookmark"></i>&nbsp;{{ .Env }}&nbsp;
+                    <i class="fa fa-dashboard"></i>&nbsp;{{ .Env }}
                 </span>
                 <span class="log-meta">
-                    <i class="fas fa-tachometer-alt"></i>&nbsp;{{ .Project }}&nbsp;
+                    <i class="fa fa-cubes"></i>&nbsp;{{ .Project }}
                 </span>
                 <span class="log-meta">
-                    <i class="fas fa-folder-open"></i>&nbsp;{{ .Topic }}&nbsp;
+                    <i class="fa fa-compass"></i>&nbsp;{{ .Topic }}
                 </span>
                 <span class="log-meta">
-                    <i class="fas fa-server"></i>&nbsp;{{ .Hostname }}&nbsp;
+                    <i class="fa fa-server"></i>&nbsp;{{ .Hostname }}
                 </span>
                 </p>
                 <pre><code>{{ .Message }}</code></pre>
@@ -166,14 +162,10 @@
         {{ end }}
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
-        crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.2/js/bootstrap.min.js" integrity="sha256-IeI0loa35pfuDxqZbGhQUiZmD2Cywv1/bdqiypGW46o="
-        crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/js/bootstrap-datepicker.min.js" integrity="sha256-tW5LzEC7QjhG0CiAvxlseMTs2qJS7u3DRPauDjFJ3zo="
-        crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/locales/bootstrap-datepicker.zh-CN.min.js"
-        integrity="sha256-TWeu6bCkUfGPvdsbuXV9bNClNqZBR/WVdA6K8KFVSQA=" crossorigin="anonymous"></script>
+    <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.bootcss.com/bootstrap/4.1.1/js/bootstrap.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.bootcss.com/bootstrap-datepicker/1.8.0/js/bootstrap-datepicker.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.bootcss.com/bootstrap-datepicker/1.8.0/locales/bootstrap-datepicker.zh-CN.min.js" crossorigin="anonymous"></script>
     <script>
         $(document).ready(function () {
             $("#date-selector").datepicker({
