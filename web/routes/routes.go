@@ -9,5 +9,5 @@ import (
 func Route(n *nova.Nova) {
 	r := router.Route(n)
 	r.Get("/").Use(routeIndex)
-	r.Get("/collections/:id").Use(routeCollectionsShow)
+	r.Get("/collections/:date").Use(routeCollectionsShow)
 }

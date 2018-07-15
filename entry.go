@@ -4,8 +4,6 @@ import (
 	"regexp"
 	"strings"
 	"time"
-
-	"github.com/globalsign/mgo/bson"
 )
 
 var (
@@ -92,26 +90,18 @@ func decodeSource(raw string, le *LogEntry) (ok bool) {
 
 // LogEntry a log document in mongodb
 type LogEntry struct {
-	Timestamp time.Time
-	Hostname  string
-	Env       string
-	Project   string
-	Topic     string
-	Crid      string
-	Message   string
+	Timestamp time.Time `bson:"timestamp"`
+	Hostname  string    `bson:"hostname"`
+	Env       string    `bson:"env"`
+	Project   string    `bson:"project"`
+	Topic     string    `bson:"topic"`
+	Crid      string    `bson:"crid"`
+	Message   string    `bson:"message"`
 }
 
-// ToBSON convert to bson.M
-func (l LogEntry) ToBSON() bson.M {
-	return bson.M{
-		"timestamp": l.Timestamp,
-		"hostname":  l.Hostname,
-		"env":       l.Env,
-		"project":   l.Project,
-		"topic":     l.Topic,
-		"crid":      l.Crid,
-		"message":   l.Message,
-	}
+// Time time text
+func (l LogEntry) Time() string {
+	return l.Timestamp.Format("15:04:05.000")
 }
 
 // ESEntry legacy elasticsearch entry in source field

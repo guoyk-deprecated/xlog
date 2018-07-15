@@ -10,7 +10,10 @@ import (
 
 func routeIndex(c *nova.Context) (err error) {
 	now := time.Now()
-	id := fmt.Sprintf("%04d%02d%02d", now.Year(), now.Month(), now.Day())
-	http.Redirect(c.Res, c.Req, "/collections/"+id, http.StatusFound)
+	http.Redirect(
+		c.Res,
+		c.Req,
+		fmt.Sprintf("/collections/%04d-%02d-%02d", now.Year(), now.Month(), now.Day()),
+		http.StatusFound)
 	return
 }

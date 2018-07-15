@@ -8,6 +8,7 @@ import (
 	"github.com/novakit/nova"
 	"github.com/novakit/view"
 	"github.com/yankeguo/xlog"
+	_ "github.com/yankeguo/xlog/web"
 	"github.com/yankeguo/xlog/web/modules"
 	"github.com/yankeguo/xlog/web/routes"
 )

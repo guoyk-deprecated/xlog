@@ -2,9 +2,169 @@
 <html>
 
 <head>
+    <title>{{.CollectionDate}}</title>
+    <meta charset="UTF-8">
+    <meta name="canonical-date" content="{{.CollectionDate}}" />
+    <meta name="canonical-query" content="{{.Query.Encode}}" />
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.0/css/all.css" integrity="sha384-lKuwvrZot6UHsBSfcMvOkWwlCMgc0TaWr+30HWe3a4ltaBwTZhyTEggF5tJv8tbt"
+        crossorigin="anonymous">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/css/bootstrap.min.css" integrity="sha384-Smlep5jCw/wG7hdkwQ/Z5nLIefveQRIY9nfy6xoR1uRYBtpZgI6339F5dgvm/e9B"
+        crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/css/bootstrap-datepicker.min.css"
+        integrity="sha256-JDBcnYeV19J14isGd3EtnsCQK05d8PczJ5+fvEvBJvI=" crossorigin="anonymous" />
+    <style>
+        body {
+            padding-top: 56px;
+            font-size: 0.8rem;
+        }
+
+        pre {
+            white-space: pre-wrap;
+            white-space: -moz-pre-wrap;
+            white-space: -pre-wrap;
+            white-space: -o-pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .form-control {
+            background-color: #ededed;
+        }
+
+        .form-control.is-valid {
+            background-color: white;
+            border-width: 2px;
+        }
+    </style>
 </head>
 
 <body>
+    <nav class="navbar navbar-primary bg-light fixed-top">
+        <a href="#" id="date-selector" class="navbar-brand" data-date="{{.CollectionDate}}">
+            <i class="fas fa-calendar-alt"></i>&nbsp;{{.CollectionDate}}&nbsp;
+            <small>({{.QueryCount}}/{{.CollectionTotalCount}} 条日志)</small>
+        </a>
+        <form class="form-inline" method="GET">
+            <div class="input-group input-group-sm">
+                <div class="input-group-prepend">
+                    <div class="input-group-text form-control-sm">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                </div>
+                <input style="width: 6rem;" class="form-control form-control-sm mr-sm-2 {{if .Query.BeginFormatted}}is-valid{{end}}" type="text"
+                    name="begin" placeholder="hh:mm:ss" value="{{.Query.BeginFormatted}}" />
+            </div>
+            <div class="input-group input-group-sm">
+                <div class="input-group-prepend">
+                    <div class="input-group-text form-control-sm">
+                        <i class="fas fa-id-card"></i>
+                    </div>
+                </div>
+                <input style="width: 6rem;" class="form-control form-control-sm mr-sm-2 {{if .Query.Crid}}is-valid{{end}}" type="text" name="crid"
+                    placeholder="CRID" value="{{.Query.Crid}}" />
+            </div>
+            <div class="input-group input-group-sm">
+                <div class="input-group-prepend">
+                    <div class="input-group-text form-control-sm">
+                        <i class="fas fa-bookmark"></i>
+                    </div>
+                </div>
+                <input style="width: 6rem;" class="form-control form-control-sm mr-sm-2 {{if .Query.Env}}is-valid{{end}}" type="text" name="env"
+                    placeholder="环境" value="{{.Query.Env}}" />
+            </div>
+            <div class="input-group input-group-sm">
+                <div class="input-group-prepend">
+                    <div class="input-group-text form-control-sm">
+                        <i class="fas fa-tachometer-alt"></i>
+                    </div>
+                </div>
+                <input style="width: 6rem;" class="form-control form-control-sm mr-sm-2 {{if .Query.Project}}is-valid{{end}}" type="text"
+                    name="project" placeholder="项目" value="{{.Query.Project}}" />
+            </div>
+            <div class="input-group input-group-sm">
+                <div class="input-group-prepend">
+                    <div class="input-group-text form-control-sm">
+                        <i class="fas fa-folder-open"></i>
+                    </div>
+                </div>
+                <input style="width: 6rem;" class="form-control form-control-sm mr-sm-2 {{if .Query.Topic}}is-valid{{end}}" type="text" name="topic"
+                    placeholder="主题" value="{{.Query.Topic}}" />
+            </div>
+            <div class="input-group input-group-sm">
+                <div class="input-group-prepend">
+                    <div class="input-group-text form-control-sm">
+                        <i class="fas fa-server"></i>
+                    </div>
+                </div>
+                <input style="width: 6rem;" class="form-control form-control-sm mr-sm-2 {{if .Query.Hostname}}is-valid{{end}}" type="text"
+                    name="hostname" placeholder="服务器" value="{{.Query.Hostname}}" />
+            </div>
+
+            <button class="btn btn-success btn-sm my-2 my-sm-0" type="submit">Search</button>
+        </form>
+    </nav>
+    <div class="container-fluid">
+        <div class="row">
+            <table class="table table-striped">
+                <tbody>
+                    {{ if .Results }} {{ range .Results }}
+                    <tr>
+                        <td>
+                            <p>
+                                <span style="min-width: 8rem; display: inline-block;">
+                                    <i class="fas fa-clock"></i>&nbsp;
+                                    <b>{{ .Time }}</b>
+                                </span>
+                                <span style="min-width: 10rem; display: inline-block;">
+                                    <i class="fas fa-id-card"></i>&nbsp;{{ .Crid }}&nbsp;
+                                </span>
+                                <span style="min-width: 6rem; display: inline-block;">
+                                    <i class="fas fa-bookmark"></i>&nbsp;{{ .Env }}&nbsp;
+                                </span>
+                                <span style="min-width: 6rem; display: inline-block;">
+                                    <i class="fas fa-tachometer-alt"></i>&nbsp;{{ .Project }}&nbsp;
+                                </span>
+                                <span style="min-width: 6rem; display: inline-block;">
+                                    <i class="fas fa-folder-open"></i>&nbsp;{{ .Topic }}&nbsp;
+                                </span>
+                                <span style="min-width: 8rem; display: inline-block;">
+                                    <i class="fas fa-server"></i>&nbsp;{{ .Hostname }}&nbsp;
+                                </span>
+                            </p>
+                            <pre><code>{{ .Message }}</code></pre>
+                        </td>
+                    </tr>
+                    {{ end }} {{ else }}
+                    <tr>
+                        <td class="text-center">
+                            没有结果
+                        </td>
+                    </tr>
+                    {{ end }}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.2/js/bootstrap.min.js" integrity="sha256-IeI0loa35pfuDxqZbGhQUiZmD2Cywv1/bdqiypGW46o="
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/js/bootstrap-datepicker.min.js" integrity="sha256-tW5LzEC7QjhG0CiAvxlseMTs2qJS7u3DRPauDjFJ3zo="
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/locales/bootstrap-datepicker.zh-CN.min.js"
+        integrity="sha256-TWeu6bCkUfGPvdsbuXV9bNClNqZBR/WVdA6K8KFVSQA=" crossorigin="anonymous"></script>
+    <script>
+        $(document).ready(function () {
+            $("#date-selector").datepicker({
+                format: 'yyyy-mm-dd',
+                language: "zh-CN",
+                todayHighlight: true,
+                todayBtn: true,
+            }).on("changeDate", function (e) {
+                window.location = "/collections/" + e.format(0) + "?" + $('meta[name="canonical-query"]').attr("content")
+            });
+        })
+    </script>
 </body>
 
 </html>

@@ -102,12 +102,9 @@ func main() {
 			count++
 			log.Printf("progress: %012d / %012d", count, total)
 			if options.Dev {
-				log.Println(">>> WILL INSERT", collection)
-				for k, v := range le.ToBSON() {
-					log.Println("  ", k, "=", v)
-				}
+				log.Println(">>> WILL INSERT", collection, le)
 			} else {
-				if err = mDB.C(collection).Insert(le.ToBSON()); err != nil {
+				if err = mDB.C(collection).Insert(le); err != nil {
 					log.Println(err)
 				}
 			}

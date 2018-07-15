@@ -49,6 +49,11 @@ func (d *Database) CollectionName(ts time.Time) string {
 	)
 }
 
+// Collection get collection by date string
+func (d *Database) Collection(t time.Time) *mgo.Collection {
+	return d.DB.C(fmt.Sprintf("%s%04d%02d%02d", d.CollectionPrefix, t.Year(), t.Month(), t.Day()))
+}
+
 // EnableSharding enable sharding
 func (d *Database) EnableSharding(coll string) error {
 	return d.DB.Run(bson.D{
@@ -81,7 +86,7 @@ func (d *Database) EnsureIndexes(coll string) (err error) {
 
 // Insert insert a log entry, choose collection automatically
 func (d *Database) Insert(le LogEntry) (err error) {
-	err = d.DB.C(d.CollectionName(le.Timestamp)).Insert(le.ToBSON())
+	err = d.DB.C(d.CollectionName(le.Timestamp)).Insert(&le)
 	return
 }
 
@@ -111,7 +116,7 @@ func (d *Database) BulkInsertionCommit() (err error) {
 		bs = bs[:0]
 		// convert LogEntry to bson.M
 		for _, le := range les {
-			bs = append(bs, le.ToBSON())
+			bs = append(bs, le)
 		}
 		// insert mutiple documents
 		if err = d.DB.C(coll).Insert(bs...); err != nil {
