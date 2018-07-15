@@ -58,7 +58,11 @@ func (q *Query) Execute(d *Database, t time.Time, ret *[]LogEntry) error {
 	c := d.Collection(t)
 	p := bson.M{}
 	q.EncodeQuery(p, t)
-	return c.Find(p).Sort("timestamp").Limit(500).All(ret)
+	sort := "timestamp"
+	if q.Begin.IsZero() {
+		sort = "-" + sort
+	}
+	return c.Find(p).Sort(sort).Limit(500).All(ret)
 }
 
 // Count count against mongodb, a date must be specified
