@@ -23,11 +23,42 @@ var (
 // Query collection query
 type Query struct {
 	Begin    time.Time // time start, only hour/minute/second
+	End      time.Time // time end, only hour/minute/second
 	Crid     string    // crid
 	Hostname string    // hostname
 	Env      string    // nev
 	Project  string    // project
 	Topic    string    // topic
+}
+
+// ParseQueryTime parse a query time
+func ParseQueryTime(s string) (t time.Time) {
+	var err error
+	if len(s) > 0 {
+		for _, layout := range QueryTimeLayouts {
+			if t, err = time.Parse(layout, s); err == nil {
+				break
+			}
+		}
+	}
+	return
+}
+
+// ParseQueryTimeRange parse a query time range
+func ParseQueryTimeRange(s string) (begin time.Time, end time.Time) {
+	times := strings.Split(s, "-")
+	if len(times) > 0 {
+		begin = ParseQueryTime(strings.TrimSpace(times[0]))
+		if !begin.IsZero() {
+			if len(times) > 1 {
+				end = ParseQueryTime(strings.TrimSpace(times[1]))
+			}
+			if end.IsZero() {
+				end = begin.Add(time.Minute)
+			}
+		}
+	}
+	return
 }
 
 // Decode decode a query from request
@@ -40,16 +71,7 @@ func (q *Query) Decode(req *http.Request) (err error) {
 	q.Env = strings.TrimSpace(req.Form.Get("env"))
 	q.Project = strings.TrimSpace(req.Form.Get("project"))
 	q.Topic = strings.TrimSpace(req.Form.Get("topic"))
-
-	begin := strings.TrimSpace(req.Form.Get("begin"))
-	if len(begin) > 0 {
-		for _, layout := range QueryTimeLayouts {
-			if q.Begin, err = time.Parse(layout, begin); err == nil {
-				break
-			}
-		}
-		err = nil
-	}
+	q.Begin, q.End = ParseQueryTimeRange(strings.TrimSpace(req.Form.Get("time")))
 	return
 }
 
@@ -59,7 +81,7 @@ func (q *Query) Execute(d *Database, t time.Time, ret *[]LogEntry) error {
 	p := bson.M{}
 	q.EncodeQuery(p, t)
 	sort := "timestamp"
-	if q.Begin.IsZero() {
+	if q.Begin.IsZero() || q.End.IsZero() {
 		sort = "-" + sort
 	}
 	return c.Find(p).Sort(sort).Limit(500).All(ret)
@@ -91,7 +113,7 @@ func (q Query) EncodeQuery(p bson.M, t time.Time) {
 	if len(q.Topic) > 0 {
 		p["topic"] = q.Topic
 	}
-	if !q.Begin.IsZero() {
+	if !q.Begin.IsZero() && !q.End.IsZero() {
 		p["timestamp"] = bson.M{
 			"$gt": time.Date(
 				t.Year(),
@@ -100,7 +122,17 @@ func (q Query) EncodeQuery(p bson.M, t time.Time) {
 				q.Begin.Hour(),
 				q.Begin.Minute(),
 				q.Begin.Second(),
-				0,
+				q.Begin.Nanosecond(),
+				time.UTC,
+			),
+			"$lt": time.Date(
+				t.Year(),
+				t.Month(),
+				t.Day(),
+				q.End.Hour(),
+				q.End.Minute(),
+				q.End.Second(),
+				q.End.Nanosecond(),
 				time.UTC,
 			),
 		}
@@ -127,15 +159,23 @@ func (q Query) Encode() string {
 		vals.Set("topic", q.Topic)
 	}
 	if !q.Begin.IsZero() {
-		vals.Set("begin", q.BeginFormatted())
+		vals.Set("time", q.TimeFormatted())
 	}
 	return vals.Encode()
 }
 
-// BeginFormatted hh:mm:ss format of begin
-func (q Query) BeginFormatted() string {
-	if q.Begin.IsZero() {
+// TimeFormatted hh:mm:ss format of begin
+func (q Query) TimeFormatted() string {
+	if q.Begin.IsZero() || q.End.IsZero() {
 		return ""
 	}
-	return fmt.Sprintf("%02d:%02d:%02d", q.Begin.Hour(), q.Begin.Minute(), q.Begin.Second())
+	return fmt.Sprintf(
+		"%02d:%02d:%02d-%02d:%02d:%02d",
+		q.Begin.Hour(),
+		q.Begin.Minute(),
+		q.Begin.Second(),
+		q.End.Hour(),
+		q.End.Minute(),
+		q.End.Second(),
+	)
 }

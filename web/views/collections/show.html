@@ -40,8 +40,7 @@
 <body>
     <nav class="navbar navbar-primary bg-light fixed-top">
         <a href="#" id="date-selector" class="navbar-brand" data-date="{{.CollectionDate}}">
-            <i class="fas fa-calendar-alt"></i>&nbsp;{{.CollectionDate}}&nbsp;
-            <small>({{.QueryCount}}/{{.CollectionTotalCount}})</small>
+            <i class="fas fa-calendar-alt"></i>&nbsp;{{.CollectionDate}}
         </a>
         <form class="form-inline" method="GET">
             <div class="input-group input-group-sm">
@@ -50,8 +49,8 @@
                         <i class="fas fa-clock"></i>
                     </div>
                 </div>
-                <input style="width: 6rem;" class="form-control form-control-sm mr-sm-2 {{if .Query.BeginFormatted}}is-valid{{end}}" type="text"
-                    name="begin" placeholder="hh:mm:ss" value="{{.Query.BeginFormatted}}" />
+                <input style="width: 10rem;" class="form-control form-control-sm mr-sm-2 {{if .Query.TimeFormatted}}is-valid{{end}}" type="text"
+                    name="time" placeholder="hh:mm:ss-hh:mm:ss" value="{{.Query.TimeFormatted}}" />
             </div>
             <div class="input-group input-group-sm">
                 <div class="input-group-prepend">
@@ -106,7 +105,13 @@
         <div class="row">
             <table class="table table-striped">
                 <tbody>
-                    {{ if .Results }} {{ range .Results }}
+                    {{ if .Results }}
+                    <tr>
+                        <td class="text-center">
+                            今日共 {{.CollectionTotalCount}} 条记录，查询到 {{.QueryCount}} 条符合条件的记录
+                        </td>
+                    </tr>
+                    {{ range .Results }}
                     <tr>
                         <td>
                             <p>
@@ -136,7 +141,7 @@
                     {{ end }} {{ else }}
                     <tr>
                         <td class="text-center">
-                            没有结果
+                            今日共 {{.CollectionTotalCount}} 条记录，没有查询到符合条件的记录
                         </td>
                     </tr>
                     {{ end }}
