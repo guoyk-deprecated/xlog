@@ -24,6 +24,7 @@
             white-space: -pre-wrap;
             white-space: -o-pre-wrap;
             word-wrap: break-word;
+            word-break: break-all;
         }
 
         .form-control {
@@ -33,6 +34,24 @@
         .form-control.is-valid {
             background-color: white;
             border-width: 2px;
+        }
+
+        span.log-meta {
+            margin-right: 0.6rem;
+        }
+
+        div.log-entry {
+            padding-top: 0.6rem;
+            padding-bottom: 0.6rem;
+        }
+
+        div.result-meta {
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+        }
+
+        .container-fluid>div:nth-child(2n+1) {
+            background-color: #ededed;
         }
     </style>
 </head>
@@ -102,52 +121,47 @@
         </form>
     </nav>
     <div class="container-fluid">
-        <div class="row">
-            <table class="table table-striped">
-                <tbody>
-                    {{ if .Results }}
-                    <tr>
-                        <td class="text-center">
-                            今日共 {{.CollectionTotalCount}} 条记录，查询到 {{.QueryCount}} 条符合条件的记录
-                        </td>
-                    </tr>
-                    {{ range .Results }}
-                    <tr>
-                        <td>
-                            <p>
-                                <span style="min-width: 8rem; display: inline-block;">
-                                    <i class="fas fa-clock"></i>&nbsp;
-                                    <b>{{ .Time }}</b>
-                                </span>
-                                <span style="min-width: 10rem; display: inline-block;">
-                                    <i class="fas fa-id-card"></i>&nbsp;{{ .Crid }}&nbsp;
-                                </span>
-                                <span style="min-width: 6rem; display: inline-block;">
-                                    <i class="fas fa-bookmark"></i>&nbsp;{{ .Env }}&nbsp;
-                                </span>
-                                <span style="min-width: 6rem; display: inline-block;">
-                                    <i class="fas fa-tachometer-alt"></i>&nbsp;{{ .Project }}&nbsp;
-                                </span>
-                                <span style="min-width: 6rem; display: inline-block;">
-                                    <i class="fas fa-folder-open"></i>&nbsp;{{ .Topic }}&nbsp;
-                                </span>
-                                <span style="min-width: 8rem; display: inline-block;">
-                                    <i class="fas fa-server"></i>&nbsp;{{ .Hostname }}&nbsp;
-                                </span>
-                            </p>
-                            <pre><code>{{ .Message }}</code></pre>
-                        </td>
-                    </tr>
-                    {{ end }} {{ else }}
-                    <tr>
-                        <td class="text-center">
-                            今日共 {{.CollectionTotalCount}} 条记录，没有查询到符合条件的记录
-                        </td>
-                    </tr>
-                    {{ end }}
-                </tbody>
-            </table>
+        {{ if .Results }}
+        <div class="row text-center">
+            <div class="col result-meta">
+                今日共 {{.CollectionTotalCount}} 条记录，查询到 {{.QueryCount}} 条符合条件的记录
+            </div>
+            <hr />
         </div>
+        {{ range .Results }}
+        <div class="row">
+            <div class="col log-entry">
+                <span class="log-meta">
+                    <i class="fas fa-clock"></i>&nbsp;
+                    <b>{{ .Time }}</b>
+                </span>
+                <span class="log-meta">
+                    <i class="fas fa-id-card"></i>&nbsp;{{ .Crid }}&nbsp;
+                </span>
+                <span class="log-meta">
+                    <i class="fas fa-bookmark"></i>&nbsp;{{ .Env }}&nbsp;
+                </span>
+                <span class="log-meta">
+                    <i class="fas fa-tachometer-alt"></i>&nbsp;{{ .Project }}&nbsp;
+                </span>
+                <span class="log-meta">
+                    <i class="fas fa-folder-open"></i>&nbsp;{{ .Topic }}&nbsp;
+                </span>
+                <span class="log-meta">
+                    <i class="fas fa-server"></i>&nbsp;{{ .Hostname }}&nbsp;
+                </span>
+                </p>
+                <pre><code>{{ .Message }}</code></pre>
+            </div>
+            <hr />
+        </div>
+        {{ end }} {{ else }}
+        <tr>
+            <td class="text-center result-meta">
+                今日共 {{.CollectionTotalCount}} 条记录，没有查询到符合条件的记录
+            </td>
+        </tr>
+        {{ end }}
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
