@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/globalsign/mgo"
-	"github.com/globalsign/mgo/bson"
 )
 
 // Database is a wrapper of mgo.Database
@@ -50,38 +49,13 @@ func (d *Database) CollectionName(ts time.Time) string {
 }
 
 // Collection get collection by date string
-func (d *Database) Collection(t time.Time) *mgo.Collection {
-	return d.DB.C(fmt.Sprintf("%s%04d%02d%02d", d.CollectionPrefix, t.Year(), t.Month(), t.Day()))
-}
-
-// EnableSharding enable sharding
-func (d *Database) EnableSharding(coll string) error {
-	return d.DB.Run(bson.D{
-		bson.DocElem{
-			Name:  "shardCollection",
-			Value: d.DB.Name + "." + coll,
-		},
-		bson.DocElem{
-			Name: "key",
-			Value: bson.D{bson.DocElem{
-				Name:  "timestamp",
-				Value: "hashed",
-			}},
-		},
-	}, nil)
-}
-
-// EnsureIndexes ensure indexes for collection
-func (d *Database) EnsureIndexes(coll string) (err error) {
-	for _, field := range IndexedFields {
-		if err = d.DB.C(coll).EnsureIndex(mgo.Index{
-			Key:        []string{field},
-			Background: true,
-		}); err != nil {
-			return
-		}
+func (d *Database) Collection(t time.Time) (c *Collection) {
+	c = &Collection{Prefix: d.CollectionPrefix, Date: t}
+	return &Collection{
+		C:      d.DB.C(d.CollectionName(t)),
+		Prefix: d.CollectionPrefix,
+		Date:   t,
 	}
-	return
 }
 
 // Insert insert a log entry, choose collection automatically

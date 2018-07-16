@@ -14,39 +14,46 @@ func routeCollectionsShow(c *nova.Context) (err error) {
 	// variables
 	v := view.Extract(c)
 	d := modules.Database(c)
-	// collection id
-	date := router.PathParams(c).Get("date")
-	// day containing year/month/day
-	var day time.Time
-	if day, err = time.Parse("2006-01-02", date); err != nil {
+	// collection date
+	var date time.Time
+	dateStr := router.PathParams(c).Get("date")
+	if date, err = time.Parse("2006-01-02", dateStr); err != nil {
 		return
 	}
-	// collection toal count
+	// collection
+	coll := d.Collection(date)
+	// toal count
 	var totalCount int
-	if totalCount, err = d.Collection(day).Count(); err != nil {
+	if err = coll.TotalCount(&totalCount); err != nil {
 		return
 	}
-	// query
-	var queryCount int
+	// stats
+	var stats xlog.CollectionStats
+	if err = coll.Stats(&stats); err != nil {
+		return
+	}
+	// parse query
+	var q xlog.Query
+	if q, err = xlog.ParseQuery(c.Req); err != nil {
+		return
+	}
+	// query count
+	var count int
+	if err = coll.Count(q, &count); err != nil {
+		return
+	}
+	// results
 	var results []xlog.LogEntry
-	q := &xlog.Query{}
-	if err = q.Decode(c.Req); err != nil {
-		return
-	}
-	if err = q.Count(d, day, &queryCount); err != nil {
-		return
-	}
-	if err = q.Execute(d, day, &results); err != nil {
+	if err = coll.Execute(q, &results); err != nil {
 		return
 	}
 	// render
 	v.Data["Query"] = q
+	v.Data["Date"] = dateStr
+	v.Data["TotalCount"] = totalCount
+	v.Data["Count"] = count
+	v.Data["Stats"] = stats
 	v.Data["Results"] = results
-	v.Data["DatabaseName"] = d.DB.Name
-	v.Data["CollectionTotalCount"] = totalCount
-	v.Data["QueryCount"] = queryCount
-	v.Data["CollectionDate"] = date
-	v.Data["CollectionName"] = d.CollectionPrefix + date
 	v.HTML("collections/show")
 	return
 }

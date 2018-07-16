@@ -1,0 +1,58 @@
+<form id="query-form" method="GET">
+    <div class="form-group input-group input-group-sm">
+        <div class="input-group-prepend">
+            <div class="input-group-text form-control-sm">
+                <i class="fa fa-clock-o"></i>
+            </div>
+        </div>
+        <input class="form-control form-control-sm {{if .Query.TimeFormatted}}is-valid{{end}}" type="text" name="time" placeholder="hh:mm:ss-hh:mm:ss"
+            value="{{.Query.TimeFormatted}}" />
+    </div>
+    <div class="form-group input-group input-group-sm">
+        <div class="input-group-prepend">
+            <div class="input-group-text form-control-sm">
+                <i class="fa fa-id-card"></i>
+            </div>
+        </div>
+        <input class="form-control form-control-sm {{if .Query.Crid}}is-valid{{end}}" type="text" name="crid" placeholder="CRID"
+            value="{{.Query.Crid}}" />
+    </div>
+    <div class="form-group input-group input-group-sm">
+        <div class="input-group-prepend">
+            <div class="input-group-text form-control-sm">
+                <i class="fa fa-dashboard"></i>
+            </div>
+        </div>
+        <input class="form-control form-control-sm {{if .Query.Env}}is-valid{{end}}" type="text" name="env" placeholder="环境" value="{{.Query.Env}}"
+        />
+    </div>
+    <div class="form-group input-group input-group-sm">
+        <div class="input-group-prepend">
+            <div class="input-group-text form-control-sm">
+                <i class="fa fa-cubes"></i>
+            </div>
+        </div>
+        <input class="form-control form-control-sm {{if .Query.Project}}is-valid{{end}}" type="text" name="project" placeholder="项目"
+            value="{{.Query.Project}}" />
+    </div>
+    <div class="form-group input-group input-group-sm">
+        <div class="input-group-prepend">
+            <div class="input-group-text form-control-sm">
+                <i class="fa fa-compass"></i>
+            </div>
+        </div>
+        <input class="form-control form-control-sm {{if .Query.Topic}}is-valid{{end}}" type="text" name="topic" placeholder="主题"
+            value="{{.Query.Topic}}" />
+    </div>
+    <div class="form-group input-group input-group-sm">
+        <div class="input-group-prepend">
+            <div class="input-group-text form-control-sm">
+                <i class="fa fa-server"></i>
+            </div>
+        </div>
+        <input class="form-control form-control-sm {{if .Query.Hostname}}is-valid{{end}}" type="text" name="hostname" placeholder="服务器"
+            value="{{.Query.Hostname}}" />
+    </div>
+
+    <button class="btn btn-block btn-success btn-sm" type="submit">查询</button>
+</form>

@@ -2,16 +2,17 @@
 <html>
 
 <head>
-    <title>{{.CollectionDate}}</title>
+    <title>XLOG {{.Date}}</title>
     <meta charset="UTF-8">
-    <meta name="canonical-date" content="{{.CollectionDate}}" />
-    <meta name="canonical-query" content="{{.Query.Encode}}" />
+    <meta name="canonical-date" content="{{.Date}}" />
+    <meta name="canonical-query" content="{{.Query.ToURLQuery}}" />
     <link href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" crossorigin="anonymous">
     <link href="https://cdn.bootcss.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
     <link href="https://cdn.bootcss.com/bootstrap-datepicker/1.8.0/css/bootstrap-datepicker.min.css" rel="stylesheet" crossorigin="anonymous">
     <style>
         body {
-            padding-top: 56px;
+            padding-top: 15px;
+            padding-bottom: 15px;
             font-size: 0.9rem;
         }
 
@@ -25,8 +26,12 @@
             word-break: break-all;
         }
 
+        #query-form>div.input-group>div.input-group-prepend>div.input-group-text {
+            width: 32px;
+        }
+
         .form-control {
-            background-color: #ededed;
+            background-color: #f4f4f4;
         }
 
         .form-control.is-valid {
@@ -49,117 +54,66 @@
             padding-bottom: 1rem;
         }
 
-        .container-fluid>div:nth-child(2n+1) {
-            background-color: #ededed;
+        .results>div:nth-child(2n+1) {
+            border-radius: 2px;
+            background-color: #f4f4f4;
         }
     </style>
 </head>
 
 <body>
-    <nav class="navbar navbar-primary bg-light fixed-top">
-        <a href="#" id="date-selector" class="navbar-brand" data-date="{{.CollectionDate}}">
-            <i class="fa fa-calendar"></i>&nbsp;{{.CollectionDate}}
-        </a>
-        <form class="form-inline" method="GET">
-            <div class="input-group input-group-sm">
-                <div class="input-group-prepend">
-                    <div class="input-group-text form-control-sm">
-                        <i class="fa fa-clock-o"></i>
-                    </div>
-                </div>
-                <input style="width: 10rem;" class="form-control form-control-sm mr-sm-2 {{if .Query.TimeFormatted}}is-valid{{end}}" type="text"
-                    name="time" placeholder="hh:mm:ss-hh:mm:ss" value="{{.Query.TimeFormatted}}" />
-            </div>
-            <div class="input-group input-group-sm">
-                <div class="input-group-prepend">
-                    <div class="input-group-text form-control-sm">
-                        <i class="fa fa-id-card"></i>
-                    </div>
-                </div>
-                <input style="width: 6rem;" class="form-control form-control-sm mr-sm-2 {{if .Query.Crid}}is-valid{{end}}" type="text" name="crid"
-                    placeholder="CRID" value="{{.Query.Crid}}" />
-            </div>
-            <div class="input-group input-group-sm">
-                <div class="input-group-prepend">
-                    <div class="input-group-text form-control-sm">
-                        <i class="fa fa-dashboard"></i>
-                    </div>
-                </div>
-                <input style="width: 6rem;" class="form-control form-control-sm mr-sm-2 {{if .Query.Env}}is-valid{{end}}" type="text" name="env"
-                    placeholder="环境" value="{{.Query.Env}}" />
-            </div>
-            <div class="input-group input-group-sm">
-                <div class="input-group-prepend">
-                    <div class="input-group-text form-control-sm">
-                        <i class="fa fa-cubes"></i>
-                    </div>
-                </div>
-                <input style="width: 6rem;" class="form-control form-control-sm mr-sm-2 {{if .Query.Project}}is-valid{{end}}" type="text"
-                    name="project" placeholder="项目" value="{{.Query.Project}}" />
-            </div>
-            <div class="input-group input-group-sm">
-                <div class="input-group-prepend">
-                    <div class="input-group-text form-control-sm">
-                        <i class="fa fa-compass"></i>
-                    </div>
-                </div>
-                <input style="width: 6rem;" class="form-control form-control-sm mr-sm-2 {{if .Query.Topic}}is-valid{{end}}" type="text" name="topic"
-                    placeholder="主题" value="{{.Query.Topic}}" />
-            </div>
-            <div class="input-group input-group-sm">
-                <div class="input-group-prepend">
-                    <div class="input-group-text form-control-sm">
-                        <i class="fa fa-server"></i>
-                    </div>
-                </div>
-                <input style="width: 6rem;" class="form-control form-control-sm mr-sm-2 {{if .Query.Hostname}}is-valid{{end}}" type="text"
-                    name="hostname" placeholder="服务器" value="{{.Query.Hostname}}" />
-            </div>
-
-            <button class="btn btn-success btn-sm my-2 my-sm-0" type="submit">Search</button>
-        </form>
-    </nav>
     <div class="container-fluid">
-        {{ if .Results }}
-        <div class="row text-center">
-            <div class="col result-meta">
-                今日共 {{.CollectionTotalCount}} 条记录，查询到 {{.QueryCount}} 条，列出 {{len .Results}} 条
-            </div>
-            <hr />
-        </div>
-        {{ range .Results }}
         <div class="row">
-            <div class="col log-entry">
-                <span class="log-meta">
-                    <i class="fa fa-clock-o"></i>&nbsp;{{ .Time }}
-                </span>
-                <span class="log-meta">
-                    <i class="fa fa-id-card"></i>&nbsp;{{ .Crid }}
-                </span>
-                <span class="log-meta">
-                    <i class="fa fa-dashboard"></i>&nbsp;{{ .Env }}
-                </span>
-                <span class="log-meta">
-                    <i class="fa fa-cubes"></i>&nbsp;{{ .Project }}
-                </span>
-                <span class="log-meta">
-                    <i class="fa fa-compass"></i>&nbsp;{{ .Topic }}
-                </span>
-                <span class="log-meta">
-                    <i class="fa fa-server"></i>&nbsp;{{ .Hostname }}
-                </span>
-                </p>
-                <pre><code>{{ .Message }}</code></pre>
+            <div class="col-md-3" style="position: fixed; z-index: 1000;">
+                <div class="row">
+                    <div class="col">
+                        <div class="card mb-3">
+                            <ul class="list-group list-group-flush">
+                                <a href="#" id="date-selector" class="list-group-item text-center" data-date="{{.Date}}">
+                                    <b>
+                                        {{.Date}}&nbsp;
+                                        <i class="fa fa-arrow-circle-right"></i>
+                                    </b>
+                                </a>
+                                <li class="list-group-item justify-content-between d-flex w-100">
+                                    <b>本日总记录数</b>
+                                    <span>{{.TotalCount}}</span>
+                                </li>
+                                <li class="list-group-item justify-content-between d-flex w-100">
+                                    <b>本日磁盘占用</b>
+                                    <span>{{.Stats.StorageSizeFormatted}}</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="card mb-3">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item text-center">
+                                    <b>查询日志</b>
+                                </li>
+                            </ul>
+                            <div class="card-body">
+                                {{ template "common/form" . }}
+                            </div>
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item justify-content-between d-flex w-100">
+                                    <b>当前展示</b>
+                                    <span>{{len .Results}} / {{.Count}}</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <hr />
-        </div>
-        {{ end }} {{ else }}
-        <div class="row text-center">
-            <div class="col result-meta">
-                今日共 {{.CollectionTotalCount}} 条记录，没有查询到符合条件的记录
+            <div class="col-md-9 offset-md-3 results">
+                {{ if .Results }} {{ range .Results }} {{ template "common/row" . }} {{ end }} {{ else }}
+                <div class="row text-center">
+                    <div class="col result-meta">
+                        没有查询到符合条件的记录
+                    </div>
+                </div>
+                {{ end }}
             </div>
         </div>
-        {{ end }}
     </div>
 
     <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js" crossorigin="anonymous"></script>

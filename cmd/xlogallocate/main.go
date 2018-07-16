@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"log"
 	"time"
@@ -10,16 +11,19 @@ import (
 
 var (
 	options xlog.Options
-
-	next bool
 )
 
 func main() {
 	// options
 	var err error
-	flag.BoolVar(&next, "next", false, "allocate for next year")
+	var year int
+	flag.IntVar(&year, "year", 0, "allocate indexes for year")
 	if err = xlog.ParseOptionsFlag(&options); err != nil {
 		panic(err)
+	}
+
+	if year == 0 {
+		panic(errors.New("invalid year input"))
 	}
 
 	// create client
@@ -28,29 +32,24 @@ func main() {
 		panic(err)
 	}
 
-	// get year
-	year := time.Now().Year()
-	if next {
-		year++
-	}
 	// 02:00 of the first day of the year
-	ts := time.Date(year, time.January, 1, 2, 0, 0, 0, time.UTC)
+	date := time.Date(year, time.January, 1, 2, 0, 0, 0, time.UTC)
 	// iterate whole year
 	for {
-		coll := db.CollectionName(ts)
-		log.Println("allocating:", coll)
+		coll := db.Collection(date)
+		log.Println("allocating:", coll.C.Name)
 		// shard
-		if err = db.EnableSharding(coll); err != nil {
-			log.Println("failed to enable sharding:", coll, err)
+		if err = coll.EnableSharding(); err != nil {
+			log.Println("failed to enable sharding:", coll.C.Name, err)
 		}
 		// index
-		if err = db.EnsureIndexes(coll); err != nil {
-			log.Println("failed to ensure indexes:", coll, err)
+		if err = coll.EnsureIndexes(); err != nil {
+			log.Println("failed to ensure indexes:", coll.C.Name, err)
 		}
 		// next day
-		ts = ts.Add(time.Hour * 24)
+		date = date.Add(time.Hour * 24)
 		// break if not this year
-		if ts.Year() != year {
+		if date.Year() != year {
 			break
 		}
 	}

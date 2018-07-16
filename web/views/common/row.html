@@ -1,0 +1,25 @@
+<div class="row">
+    <div class="col log-entry">
+        <span class="log-meta">
+            <i class="fa fa-clock-o"></i>&nbsp;{{ .Time }}
+        </span>
+        <span class="log-meta">
+            <i class="fa fa-id-card"></i>&nbsp;{{ .Crid }}
+        </span>
+        <span class="log-meta">
+            <i class="fa fa-dashboard"></i>&nbsp;{{ .Env }}
+        </span>
+        <span class="log-meta">
+            <i class="fa fa-cubes"></i>&nbsp;{{ .Project }}
+        </span>
+        <span class="log-meta">
+            <i class="fa fa-compass"></i>&nbsp;{{ .Topic }}
+        </span>
+        <span class="log-meta">
+            <i class="fa fa-server"></i>&nbsp;{{ .Hostname }}
+        </span>
+        </p>
+        <pre><code>{{ .Message }}</code></pre>
+    </div>
+    <hr />
+</div>

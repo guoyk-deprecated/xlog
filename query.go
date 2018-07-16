@@ -61,8 +61,8 @@ func ParseQueryTimeRange(s string) (begin time.Time, end time.Time) {
 	return
 }
 
-// Decode decode a query from request
-func (q *Query) Decode(req *http.Request) (err error) {
+// ParseQuery decode query from http.Request
+func ParseQuery(req *http.Request) (q Query, err error) {
 	if err = req.ParseForm(); err != nil {
 		return
 	}
@@ -75,29 +75,8 @@ func (q *Query) Decode(req *http.Request) (err error) {
 	return
 }
 
-// Execute execute query against mongodb, a date must be specified
-func (q *Query) Execute(d *Database, t time.Time, ret *[]LogEntry) error {
-	c := d.Collection(t)
-	p := bson.M{}
-	q.EncodeQuery(p, t)
-	sort := "timestamp"
-	if q.Begin.IsZero() || q.End.IsZero() {
-		sort = "-" + sort
-	}
-	return c.Find(p).Sort(sort).Limit(200).All(ret)
-}
-
-// Count count against mongodb, a date must be specified
-func (q *Query) Count(d *Database, t time.Time, count *int) (err error) {
-	c := d.Collection(t)
-	p := bson.M{}
-	q.EncodeQuery(p, t)
-	*count, err = c.Find(p).Count()
-	return
-}
-
-// EncodeQuery encode bson.M as mongodb query parameters
-func (q Query) EncodeQuery(p bson.M, t time.Time) {
+// ToBSON encode bson.M as mongodb query parameters
+func (q Query) ToBSON(p bson.M, t time.Time) {
 	if len(q.Crid) > 0 {
 		p["crid"] = q.Crid
 	}
@@ -140,8 +119,8 @@ func (q Query) EncodeQuery(p bson.M, t time.Time) {
 	return
 }
 
-// Encode encode to url query
-func (q Query) Encode() string {
+// ToURLQuery encode to url query
+func (q Query) ToURLQuery() string {
 	vals := url.Values{}
 	if len(q.Crid) > 0 {
 		vals.Set("crid", q.Crid)
@@ -164,7 +143,7 @@ func (q Query) Encode() string {
 	return vals.Encode()
 }
 
-// TimeFormatted hh:mm:ss format of begin
+// TimeFormatted hh:mm:ss-hh:mm:ss format of begin
 func (q Query) TimeFormatted() string {
 	if q.Begin.IsZero() || q.End.IsZero() {
 		return ""
