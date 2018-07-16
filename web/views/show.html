@@ -141,7 +141,7 @@
                 todayHighlight: true,
                 todayBtn: true,
             }).on("changeDate", function (e) {
-                window.location = "/collections/" + e.format(0) + "?" + $('meta[name="canonical-query"]').attr("content")
+                window.location = "/" + e.format(0) + "?" + $('meta[name="canonical-query"]').attr("content")
             });
             // setup quick search label
             $("span.quick-search").click(function (e) {
