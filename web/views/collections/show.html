@@ -27,6 +27,10 @@
             margin-bottom: 0;
         }
 
+        .card-body {
+            padding: 0.6rem;
+        }
+
         #query-form>div.input-group>div.input-group-prepend>div.input-group-text {
             width: 32px;
         }
@@ -100,19 +104,14 @@
                         </div>
                         <div class="card mb-3">
                             <ul class="list-group list-group-flush">
-                                <li class="list-group-item text-center">
-                                    <b>查询日志</b>
-                                </li>
-                            </ul>
-                            <div class="card-body">
-                                {{ template "common/form" . }}
-                            </div>
-                            <ul class="list-group list-group-flush">
                                 <li class="list-group-item justify-content-between d-flex w-100">
                                     <b>当前展示</b>
                                     <span>{{len .Results}} / {{.Count}}</span>
                                 </li>
                             </ul>
+                            <div class="card-body">
+                                {{ template "common/form" . }}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -121,7 +120,7 @@
                 {{ if .Results }} {{ range .Results }} {{ template "common/row" . }} {{ end }} {{ else }}
                 <div class="row text-center">
                     <div class="col result-meta">
-                        没有查询到符合条件的记录
+                        没有记录
                     </div>
                 </div>
                 {{ end }}
