@@ -24,19 +24,19 @@
             white-space: -o-pre-wrap;
             word-wrap: break-word;
             word-break: break-all;
+            margin-bottom: 0;
         }
 
         #query-form>div.input-group>div.input-group-prepend>div.input-group-text {
             width: 32px;
         }
 
-        .form-control {
-            background-color: #f4f4f4;
+        #query-form>div.input-group {
+            margin-bottom: 0.4rem;
         }
 
-        .form-control.is-valid {
-            background-color: white;
-            border-width: 2px;
+        .form-control::placeholder {
+            color: #b5b5b5;
         }
 
         span.log-meta {
@@ -57,6 +57,19 @@
         .results>div:nth-child(2n+1) {
             border-radius: 2px;
             background-color: #f4f4f4;
+        }
+
+        .results>div:nth-child(2n) {
+            border-left: #f4f4f4 1px solid;
+            border-right: #f4f4f4 1px solid;
+        }
+
+        span.quick-search {
+            cursor: pointer;
+        }
+
+        span.quick-search:hover {
+            color: #666;
         }
     </style>
 </head>
@@ -122,6 +135,7 @@
     <script src="https://cdn.bootcss.com/bootstrap-datepicker/1.8.0/locales/bootstrap-datepicker.zh-CN.min.js" crossorigin="anonymous"></script>
     <script>
         $(document).ready(function () {
+            // setup date picker
             $("#date-selector").datepicker({
                 format: 'yyyy-mm-dd',
                 language: "zh-CN",
@@ -130,6 +144,11 @@
             }).on("changeDate", function (e) {
                 window.location = "/collections/" + e.format(0) + "?" + $('meta[name="canonical-query"]').attr("content")
             });
+            // setup quick search label
+            $("span.quick-search").click(function (e) {
+                var name = $(e.target).attr("data-quick-search")
+                $('input[name="' + name + '"').val($(e.target).text()).focus()
+            })
         })
     </script>
 </body>
