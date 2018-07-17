@@ -81,7 +81,7 @@
 <body>
     <div class="container-fluid">
         <div class="row">
-            <div class="col-md-3" style="position: fixed; z-index: 1000;">
+            <div id="sidebar" class="col-md-3 col-lg-2" style="position: fixed; z-index: 1000;">
                 <div class="row">
                     <div class="col">
                         <div class="card mb-3">
@@ -116,7 +116,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-9 offset-md-3 results">
+            <div class="col-md-9 offset-md-3 col-lg-10 offset-lg-2 results">
                 {{ if .Results }} {{ range .Results }} {{ template "common/row" . }} {{ end }} {{ else }}
                 <div class="row text-center">
                     <div class="col result-meta">
@@ -136,6 +136,7 @@
         $(document).ready(function () {
             // setup date picker
             $("#date-selector").datepicker({
+                container: '#sidebar',
                 format: 'yyyy-mm-dd',
                 language: "zh-CN",
                 todayHighlight: true,
