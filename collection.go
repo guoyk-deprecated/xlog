@@ -67,6 +67,21 @@ func (c *Collection) Distinct(field string, out *[]string) (err error) {
 	return
 }
 
+// Hints all hints for field values
+func (c *Collection) Hints(out *map[string]interface{}) (err error) {
+	if *out == nil {
+		*out = map[string]interface{}{}
+	}
+	for _, field := range DistinctFields {
+		sub := []string{}
+		if err = c.Distinct(field, &sub); err != nil {
+			return
+		}
+		(*out)[field] = sub
+	}
+	return
+}
+
 // Stats get stats of collection
 func (c *Collection) Stats(out *CollectionStats) (err error) {
 	c.C.Database.Run(bson.D{

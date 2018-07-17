@@ -1,59 +1,60 @@
-<form id="query-form" method="GET">
-    <div class="form-group input-group input-group-sm">
-        <div class="input-group-prepend">
-            <div class="input-group-text form-control-sm">
-                <i class="fa fa-clock-o"></i>
-            </div>
-        </div>
-        <input class="form-control form-control-sm {{if .Query.TimeFormatted}}is-valid{{end}}" type="text" name="time" placeholder="hh:mm:ss-hh:mm:ss"
-            value="{{.Query.TimeFormatted}}" />
+<form id="query-form" class="form" method="GET">
+    <div class="form-group">
+        <label>
+            <i class="fa fa-clock-o"></i> 时间
+        </label>
+        <input class="form-control" type="text" name="time" placeholder="hh:mm:ss-hh:mm:ss" value="{{.Query.TimeFormatted}}" />
     </div>
-    <div class="form-group input-group input-group-sm">
-        <div class="input-group-prepend">
-            <div class="input-group-text form-control-sm">
-                <i class="fa fa-id-card"></i>
-            </div>
-        </div>
-        <input class="form-control form-control-sm {{if .Query.Crid}}is-valid{{end}}" type="text" name="crid" placeholder="CRID"
-            value="{{.Query.Crid}}" />
+    <div class="form-group">
+        <label>
+            <i class="fa fa-id-card"></i> 相关性 ID
+        </label>
+        <input class="form-control" type="text" name="crid" placeholder="CRID" value="{{.Query.Crid}}" />
     </div>
-    <div class="form-group input-group input-group-sm">
-        <div class="input-group-prepend">
-            <div class="input-group-text form-control-sm">
-                <i class="fa fa-dashboard"></i>
-            </div>
-        </div>
-        <input class="form-control form-control-sm {{if .Query.Env}}is-valid{{end}}" type="text" name="env" placeholder="环境" value="{{.Query.Env}}"
-        />
+    <div class="form-group">
+        <label>
+            <i class="fa fa-dashboard"></i> 环境
+        </label>
+        <select class="form-control selectpicker" name="env" value="{{.Query.Env}}" data-live-search="true">
+            <option value="">全部环境</option>
+            {{ range .Hints.env }}
+            <option {{ if ($.Query.Env) eq (.) }}selected="selected" {{end}}>{{.}}</option>
+            {{ end }}
+        </select>
     </div>
-    <div class="form-group input-group input-group-sm">
-        <div class="input-group-prepend">
-            <div class="input-group-text form-control-sm">
-                <i class="fa fa-cubes"></i>
-            </div>
-        </div>
-        <input class="form-control form-control-sm {{if .Query.Project}}is-valid{{end}}" type="text" name="project" placeholder="项目"
-            value="{{.Query.Project}}" />
+    <div class="form-group">
+        <label>
+            <i class="fa fa-cubes"></i> 项目
+        </label>
+        <select class="form-control selectpicker" name="project" value="{{.Query.Project}}" data-live-search="true">
+            <option value="">全部项目</option>
+            {{ range .Hints.project }}
+            <option {{ if ($.Query.Project) eq (.) }}selected="selected" {{end}}>{{.}}</option>
+            {{ end }}
+        </select>
     </div>
-    <div class="form-group input-group input-group-sm">
-        <div class="input-group-prepend">
-            <div class="input-group-text form-control-sm">
-                <i class="fa fa-compass"></i>
-            </div>
-        </div>
-        <input class="form-control form-control-sm {{if .Query.Topic}}is-valid{{end}}" type="text" name="topic" placeholder="主题"
-            value="{{.Query.Topic}}" />
+    <div class="form-group">
+        <label>
+            <i class="fa fa-compass"></i> 主题
+        </label>
+        <select class="form-control selectpicker" name="topic" value="{{.Query.Topic}}" data-live-search="true">
+            <option value="">全部主题</option>
+            {{ range .Hints.topic }}
+            <option {{ if ($.Query.Topic) eq (.) }}selected="selected" {{end}}>{{.}}</option>
+            {{ end }}
+        </select>
     </div>
-    <div class="form-group input-group input-group-sm">
-        <div class="input-group-prepend">
-            <div class="input-group-text form-control-sm">
-                <i class="fa fa-server"></i>
-            </div>
-        </div>
-        <input class="form-control form-control-sm {{if .Query.Hostname}}is-valid{{end}}" type="text" name="hostname" placeholder="服务器"
-            value="{{.Query.Hostname}}" />
+    <div class="form-group">
+        <label>
+            <i class="fa fa-server"></i> 服务器
+        </label>
+        <select class="form-control selectpicker" name="hostname" value="{{.Query.Hostname}}" data-live-search="true">
+            <option value="">全部服务器</option>
+            {{ range .Hints.hostname }}
+            <option {{ if ($.Query.Hostname) eq (.) }}selected="selected" {{end}}>{{.}}</option>
+            {{ end }}
+        </select>
     </div>
-
-    <button class="btn btn-block btn-success btn-sm" type="submit">
-        <i class="fa fa-filter"></i>&nbsp;筛选</button>
+    <button class="btn btn-block btn-success" type="submit">
+        <i class="fa fa-search"></i> 搜索</button>
 </form>

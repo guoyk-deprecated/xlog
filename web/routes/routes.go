@@ -57,23 +57,23 @@ func routeShow(c *nova.Context) (err error) {
 	if q, err = xlog.ParseQuery(c.Req); err != nil {
 		return
 	}
-	// query count
-	var count int
-	if err = coll.Count(q, &count); err != nil {
-		return
-	}
 	// results
 	var results []xlog.LogEntry
 	if err = coll.Execute(q, &results); err != nil {
+		return
+	}
+	// hints
+	var hints map[string]interface{}
+	if err = coll.Hints(&hints); err != nil {
 		return
 	}
 	// render
 	v.Data["Query"] = q
 	v.Data["Date"] = dateStr
 	v.Data["TotalCount"] = totalCount
-	v.Data["Count"] = count
 	v.Data["Stats"] = stats
 	v.Data["Results"] = results
+	v.Data["Hints"] = hints
 	v.HTML("show")
 	return
 }

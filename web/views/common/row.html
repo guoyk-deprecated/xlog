@@ -1,29 +1,30 @@
 <div class="row">
-    <div class="col log-entry">
+    <div class="col-md-12 log-entry">
         <span class="log-meta">
-            <i class="fa fa-clock-o"></i>&nbsp;{{ .Time }}
+            <i class="fa fa-clock-o"></i>
+            <span>{{ .Time }}</span>
         </span>
         <span class="log-meta">
             <i class="fa fa-id-card"></i>
-            <span class="quick-search" data-quick-search="crid">{{ .Crid }}</span>
+            <span>{{ .Crid }}</span>
         </span>
         <span class="log-meta">
             <i class="fa fa-dashboard"></i>
-            <span class="quick-search" data-quick-search="env">{{ .Env }}</span>
+            <span>{{ .Env }}</span>
         </span>
         <span class="log-meta">
             <i class="fa fa-cubes"></i>
-            <span class="quick-search" data-quick-search="project">{{ .Project }}</span>
+            <span>{{ .Project }}</span>
         </span>
         <span class="log-meta">
             <i class="fa fa-compass"></i>
-            <span class="quick-search" data-quick-search="topic">{{ .Topic }}</span>
+            <span>{{ .Topic }}</span>
         </span>
         <span class="log-meta">
             <i class="fa fa-server"></i>
-            <span class="quick-search" data-quick-search="hostname">{{ .Hostname }}</span>
+            <span>{{ .Hostname }}</span>
         </span>
         </p>
-        <pre><code>{{ .Message }}</code></pre>
+        <pre><span>{{ .Message }}</span></pre>
     </div>
 </div>

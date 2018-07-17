@@ -7,17 +7,16 @@
     <meta name="canonical-date" content="{{.Date}}" />
     <meta name="canonical-query" content="{{.Query.ToURLQuery}}" />
     <link href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" crossorigin="anonymous">
-    <link href="https://cdn.bootcss.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <link href="https://cdn.bootcss.com/bootstrap-select/1.13.1/css/bootstrap-select.min.css" rel="stylesheet" crossorigin="anonymous">
     <link href="https://cdn.bootcss.com/bootstrap-datepicker/1.8.0/css/bootstrap-datepicker.min.css" rel="stylesheet" crossorigin="anonymous">
     <style>
         body {
             padding-top: 15px;
             padding-bottom: 15px;
-            font-size: 0.9rem;
         }
 
         pre {
-            font-size: 0.8rem;
             white-space: pre-wrap;
             white-space: -moz-pre-wrap;
             white-space: -pre-wrap;
@@ -27,24 +26,15 @@
             margin-bottom: 0;
         }
 
-        .card-body {
-            padding: 0.6rem;
-        }
-
-        #query-form>div.input-group>div.input-group-prepend>div.input-group-text {
-            width: 32px;
-        }
-
-        #query-form>div.input-group {
-            margin-bottom: 0.4rem;
-        }
-
         .form-control::placeholder {
             color: #b5b5b5;
         }
 
         span.log-meta {
-            margin-right: 0.5rem;
+            margin-left: 0.5rem;
+        }
+
+        span.log-meta>span {
             font-family: monospace;
         }
 
@@ -57,24 +47,6 @@
             padding-top: 1rem;
             padding-bottom: 1rem;
         }
-
-        .results>div:nth-child(2n+1) {
-            border-radius: 2px;
-            background-color: #f4f4f4;
-        }
-
-        .results>div:nth-child(2n) {
-            border-left: #f4f4f4 1px solid;
-            border-right: #f4f4f4 1px solid;
-        }
-
-        span.quick-search {
-            cursor: pointer;
-        }
-
-        span.quick-search:hover {
-            color: #666;
-        }
     </style>
 </head>
 
@@ -83,43 +55,37 @@
         <div class="row">
             <div id="sidebar" class="col-md-3 col-lg-2" style="position: fixed; z-index: 1000;">
                 <div class="row">
-                    <div class="col">
-                        <div class="card mb-3">
+                    <div class="col-md-12">
+                        <div class="panel panel-default">
                             <ul class="list-group list-group-flush">
-                                <a href="#" id="date-selector" class="list-group-item text-center" data-date="{{.Date}}">
-                                    <b>
-                                        {{.Date}}&nbsp;
-                                        <i class="fa fa-arrow-circle-right"></i>
-                                    </b>
+                                <a href="#" id="date-selector" class="list-group-item" data-date="{{.Date}}">
+                                    <b>{{.Date}}</b>&nbsp;
+                                    <i class="fa fa-edit"></i>
                                 </a>
-                                <li class="list-group-item justify-content-between d-flex w-100">
+                                <li class="list-group-item">
                                     <b>本日总记录数</b>
-                                    <span>{{.TotalCount}}</span>
+                                    <span class="pull-right">{{.TotalCount}}</span>
                                 </li>
-                                <li class="list-group-item justify-content-between d-flex w-100">
+                                <li class="list-group-item">
                                     <b>本日磁盘占用</b>
-                                    <span>{{.Stats.StorageSizeFormatted}}</span>
+                                    <span class="pull-right">{{.Stats.StorageSizeFormatted}}</span>
                                 </li>
                             </ul>
                         </div>
-                        <div class="card mb-3">
-                            <ul class="list-group list-group-flush">
-                                <li class="list-group-item justify-content-between d-flex w-100">
-                                    <b>当前展示</b>
-                                    <span>{{len .Results}} / {{.Count}}</span>
-                                </li>
-                            </ul>
-                            <div class="card-body">
+
+                        <div class="panel panel-default">
+                            <div class="panel-body">
                                 {{ template "common/form" . }}
                             </div>
                         </div>
+
                     </div>
                 </div>
             </div>
-            <div class="col-md-9 offset-md-3 col-lg-10 offset-lg-2 results">
+            <div class="col-md-9 col-md-offset-3 col-lg-10 col-lg-offset-2 results">
                 {{ if .Results }} {{ range .Results }} {{ template "common/row" . }} {{ end }} {{ else }}
                 <div class="row text-center">
-                    <div class="col result-meta">
+                    <div class="col-md-12 result-meta">
                         没有记录
                     </div>
                 </div>
@@ -129,7 +95,9 @@
     </div>
 
     <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.bootcss.com/bootstrap/4.1.1/js/bootstrap.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.bootcss.com/bootstrap-select/1.13.1/js/bootstrap-select.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.bootcss.com/bootstrap-select/1.13.1/js/i18n/defaults-zh_CN.min.js" crossorigin="anonymous"></script>
     <script src="https://cdn.bootcss.com/bootstrap-datepicker/1.8.0/js/bootstrap-datepicker.min.js" crossorigin="anonymous"></script>
     <script src="https://cdn.bootcss.com/bootstrap-datepicker/1.8.0/locales/bootstrap-datepicker.zh-CN.min.js" crossorigin="anonymous"></script>
     <script>
@@ -144,11 +112,6 @@
             }).on("changeDate", function (e) {
                 window.location = "/" + e.format(0) + "?" + $('meta[name="canonical-query"]').attr("content")
             });
-            // setup quick search label
-            $("span.quick-search").click(function (e) {
-                var name = $(e.target).attr("data-quick-search")
-                $('input[name="' + name + '"').val($(e.target).text()).focus()
-            })
         })
     </script>
 </body>
