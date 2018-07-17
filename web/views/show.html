@@ -26,6 +26,10 @@
             margin-bottom: 0;
         }
 
+        .form-group {
+            margin-bottom: 10px;
+        }
+
         .form-control::placeholder {
             color: #b5b5b5;
         }
@@ -47,13 +51,25 @@
             padding-top: 1rem;
             padding-bottom: 1rem;
         }
+
+        #sidebar {
+            padding-left: 1rem;
+            position: fixed;
+            z-index: 1000;
+            width: 26rem;
+        }
+
+        #results {
+            padding-left: 27.4rem;
+            z-index: 0;
+        }
     </style>
 </head>
 
 <body>
     <div class="container-fluid">
         <div class="row">
-            <div id="sidebar" class="col-md-3 col-lg-2" style="position: fixed; z-index: 1000;">
+            <div id="sidebar">
                 <div class="row">
                     <div class="col-md-12">
                         <div class="panel panel-default">
@@ -85,7 +101,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-9 col-md-offset-3 col-lg-10 col-lg-offset-2 results">
+            <div id="results" class="col-md-12">
                 {{ if .Results }} {{ range .Results }} {{ template "common/row" . }} {{ end }} {{ else }}
                 <div class="row text-center">
                     <div class="col-md-12 result-meta">
