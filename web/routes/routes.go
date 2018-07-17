@@ -30,6 +30,19 @@ func routeIndex(c *nova.Context) (err error) {
 	return
 }
 
+func dateInfo(date time.Time) string {
+	now := time.Now()
+	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
+	diff := date.Sub(today) / (time.Hour * 24)
+	if diff == 0 {
+		return "今天"
+	} else if diff > 0 {
+		return fmt.Sprintf("%d天后", diff)
+	} else {
+		return fmt.Sprintf("%d天前", -diff)
+	}
+}
+
 func routeShow(c *nova.Context) (err error) {
 	// variables
 	v := view.Extract(c)
@@ -70,6 +83,7 @@ func routeShow(c *nova.Context) (err error) {
 	// render
 	v.Data["Query"] = q
 	v.Data["Date"] = dateStr
+	v.Data["DateInfo"] = dateInfo(date)
 	v.Data["TotalCount"] = totalCount
 	v.Data["Stats"] = stats
 	v.Data["Results"] = results
