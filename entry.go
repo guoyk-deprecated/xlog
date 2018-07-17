@@ -13,6 +13,9 @@ var (
 
 	// IndexedFields fields needed to be indexed
 	IndexedFields = []string{"timestamp", "hostname", "env", "project", "topic", "crid"}
+
+	// DistinctFields fields can be queried as distinct
+	DistinctFields = []string{"hostname", "env", "project", "topic"}
 )
 
 // BeatInfo beat field in a event

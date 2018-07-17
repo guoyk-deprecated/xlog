@@ -17,6 +17,7 @@ func Route(n *nova.Nova) {
 	r := router.Route(n)
 	r.Get("/").Use(routeIndex)
 	r.Get("/:date").Use(routeShow)
+	r.Get("/:date/hints").Use(routeHints)
 }
 
 func routeIndex(c *nova.Context) (err error) {
@@ -74,5 +75,28 @@ func routeShow(c *nova.Context) (err error) {
 	v.Data["Stats"] = stats
 	v.Data["Results"] = results
 	v.HTML("show")
+	return
+}
+
+func routeHints(c *nova.Context) (err error) {
+	// variables
+	v := view.Extract(c)
+	d := modules.Database(c)
+	// collection date
+	var date time.Time
+	dateStr := router.PathParams(c).Get("date")
+	if date, err = time.Parse("2006-01-02", dateStr); err != nil {
+		return
+	}
+	// collection
+	ret := map[string]interface{}{}
+	for _, field := range xlog.DistinctFields {
+		sub := []string{}
+		if err = d.Collection(date).Distinct(field, &sub); err != nil {
+			return
+		}
+		ret[field] = sub
+	}
+	v.JSON(ret)
 	return
 }

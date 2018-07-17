@@ -46,6 +46,27 @@ type Collection struct {
 	Prefix string    // prefix of collection name
 }
 
+type distinctResult struct {
+	Values []string `bson:"values"`
+}
+
+// Distinct distinct field values
+func (c *Collection) Distinct(field string, out *[]string) (err error) {
+	var ret distinctResult
+	err = c.C.Database.Run(bson.D{
+		bson.DocElem{
+			Name:  "distinct",
+			Value: c.C.Name,
+		},
+		bson.DocElem{
+			Name:  "key",
+			Value: field,
+		},
+	}, &ret)
+	*out = ret.Values
+	return
+}
+
 // Stats get stats of collection
 func (c *Collection) Stats(out *CollectionStats) (err error) {
 	c.C.Database.Run(bson.D{
