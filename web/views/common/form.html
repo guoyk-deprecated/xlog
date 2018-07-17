@@ -18,7 +18,7 @@
         <select class="form-control selectpicker" name="env" value="{{.Query.Env}}" data-live-search="true">
             <option value="">全部环境</option>
             {{ range .Hints.env }}
-            <option {{ if ($.Query.Env) eq (.) }}selected="selected" {{end}}>{{.}}</option>
+            <option {{ if eq $.Query.Env . }}selected="selected" {{end}}>{{.}}</option>
             {{ end }}
         </select>
     </div>
@@ -29,7 +29,7 @@
         <select class="form-control selectpicker" name="project" value="{{.Query.Project}}" data-live-search="true">
             <option value="">全部项目</option>
             {{ range .Hints.project }}
-            <option {{ if ($.Query.Project) eq (.) }}selected="selected" {{end}}>{{.}}</option>
+            <option {{ if eq $.Query.Project . }}selected="selected" {{end}}>{{.}}</option>
             {{ end }}
         </select>
     </div>
@@ -40,7 +40,7 @@
         <select class="form-control selectpicker" name="topic" value="{{.Query.Topic}}" data-live-search="true">
             <option value="">全部主题</option>
             {{ range .Hints.topic }}
-            <option {{ if ($.Query.Topic) eq (.) }}selected="selected" {{end}}>{{.}}</option>
+            <option {{ if eq $.Query.Topic . }}selected="selected" {{end}}>{{.}}</option>
             {{ end }}
         </select>
     </div>
@@ -51,7 +51,7 @@
         <select class="form-control selectpicker" name="hostname" value="{{.Query.Hostname}}" data-live-search="true">
             <option value="">全部服务器</option>
             {{ range .Hints.hostname }}
-            <option {{ if ($.Query.Hostname) eq (.) }}selected="selected" {{end}}>{{.}}</option>
+            <option {{ if eq $.Query.Hostname . }}selected="selected" {{end}}>{{.}}</option>
             {{ end }}
         </select>
     </div>
