@@ -1,14 +1,13 @@
 package main
 
 import (
-	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/novakit/nova"
+	"github.com/novakit/static"
 	"github.com/novakit/view"
 	"github.com/yankeguo/xlog"
-	_ "github.com/yankeguo/xlog/web"
+	_ "github.com/yankeguo/xlog/web" // compiled binfs
 	"github.com/yankeguo/xlog/web/modules"
 	"github.com/yankeguo/xlog/web/routes"
 )
@@ -23,15 +22,11 @@ func main() {
 		panic(err)
 	}
 
-	addr := fmt.Sprintf("%s:%s", options.Web.Host, options.Web.Port)
-
 	n := nova.New()
-	if !options.Dev {
-		n.Env = nova.Production
-	}
+	n.Env = nova.Env(options.Env())
+	n.Use(static.Handler(static.Options{BinFS: !options.Dev}))
 	n.Use(view.Handler(view.Options{BinFS: !options.Dev}))
 	n.Use(modules.Handler(options))
 	routes.Route(n)
-	log.Println("listening at", addr)
-	http.ListenAndServe(addr, n)
+	http.ListenAndServe(options.Web.Addr(), n)
 }

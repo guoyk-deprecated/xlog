@@ -3,6 +3,7 @@ package xlog
 import (
 	"errors"
 	"flag"
+	"fmt"
 	"io/ioutil"
 
 	"gopkg.in/yaml.v2"
@@ -20,6 +21,14 @@ type Options struct {
 	Verbose bool `yaml:"verbose"`
 	// Dev dev mode
 	Dev bool `yaml:"dev"`
+}
+
+// Env production / development
+func (o Options) Env() string {
+	if o.Dev {
+		return "development"
+	}
+	return "production"
 }
 
 // RedisOptions redis options
@@ -46,6 +55,11 @@ type WebOptions struct {
 	Host string `yaml:"host"`
 	// Port port to listen
 	Port string `yaml:"port"`
+}
+
+// Addr "host:port"
+func (w WebOptions) Addr() string {
+	return fmt.Sprintf("%s:%s", w.Host, w.Port)
 }
 
 // ReadOptionsFile load options from file
