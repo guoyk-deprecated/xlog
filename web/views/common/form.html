@@ -15,45 +15,25 @@
         <label>
             <i class="fa fa-dashboard"></i> 环境
         </label>
-        <select class="form-control selectpicker" name="env" value="{{.Query.Env}}" data-live-search="true">
-            <option value="">全部环境</option>
-            {{ range .Hints.env }}
-            <option {{ if eq $.Query.Env . }}selected="selected" {{end}}>{{.}}</option>
-            {{ end }}
-        </select>
+        <input class="form-control" type="text" name="env" placeholder="环境，如 prod" value="{{.Query.Env}}" />
     </div>
     <div class="form-group">
         <label>
             <i class="fa fa-cubes"></i> 项目
         </label>
-        <select class="form-control selectpicker" name="project" value="{{.Query.Project}}" data-live-search="true">
-            <option value="">全部项目</option>
-            {{ range .Hints.project }}
-            <option {{ if eq $.Query.Project . }}selected="selected" {{end}}>{{.}}</option>
-            {{ end }}
-        </select>
+        <input class="form-control" type="text" name="project" placeholder="项目，如 sma" value="{{.Query.Project}}" />
     </div>
     <div class="form-group">
         <label>
             <i class="fa fa-compass"></i> 主题
         </label>
-        <select class="form-control selectpicker" name="topic" value="{{.Query.Topic}}" data-live-search="true">
-            <option value="">全部主题</option>
-            {{ range .Hints.topic }}
-            <option {{ if eq $.Query.Topic . }}selected="selected" {{end}}>{{.}}</option>
-            {{ end }}
-        </select>
+        <input class="form-control" type="text" name="topic" placeholder="主题，如 access" value="{{.Query.Topic}}" />
     </div>
     <div class="form-group">
         <label>
-            <i class="fa fa-server"></i> 服务器
+            <i class="fa fa-server"></i> 主机名
         </label>
-        <select class="form-control selectpicker" name="hostname" value="{{.Query.Hostname}}" data-live-search="true">
-            <option value="">全部服务器</option>
-            {{ range .Hints.hostname }}
-            <option {{ if eq $.Query.Hostname . }}selected="selected" {{end}}>{{.}}</option>
-            {{ end }}
-        </select>
+        <input class="form-control" type="text" name="hostname" placeholder="主机名，如 xlog.01" value="{{.Query.Hostname}}" />
     </div>
     <button class="btn btn-block btn-success" type="submit">
         <i class="fa fa-search"></i> 搜索</button>
