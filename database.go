@@ -73,18 +73,9 @@ func (d *Database) Insert(rc RecordConvertible) (err error) {
 
 // Search execute a query
 func (d *Database) Search(q Query) (ret Result, err error) {
-	// validate
-	if q.Timestamp == nil || q.Timestamp.Beginning == nil || q.Timestamp.End == nil {
-		err = ErrBadQuery
-		return
-	}
-	if q.Offset < 0 {
-		err = ErrBadQuery
-		return
-	}
 	// find
 	var records []Record
-	coll := d.Collection(*q.Timestamp.Beginning)
+	coll := d.Collection(q.Timestamp.Beginning)
 	if err = coll.Find(q.ToMatch()).Sort(q.Sort()).Skip(q.Offset).Limit(QueryLimit).All(&records); err != nil {
 		return
 	}
