@@ -9,7 +9,6 @@ import (
 	"log"
 	"time"
 
-	"github.com/globalsign/mgo"
 	"github.com/globalsign/mgo/bson"
 	"github.com/yankeguo/xlog"
 )
@@ -24,14 +23,9 @@ func main() {
 	var err error
 	flag.StringVar(&date, "date", "", "date to process, for example '20180720'")
 	if err = xlog.ParseOptionsFlag(&options); err != nil {
-		panic(err)
+		log.Println("invalid config,", err)
+		return
 	}
-
-	var db *xlog.Database
-	if db, err = xlog.DialDatabase(options); err != nil {
-		panic(db)
-	}
-	defer db.Close()
 
 	var d time.Time
 	if d, err = time.Parse("20060102", date); err != nil {
@@ -39,37 +33,30 @@ func main() {
 		return
 	}
 
+	var db *xlog.Database
+	if db, err = xlog.DialDatabase(options); err != nil {
+		log.Println("failed to dial mongodb,", err)
+		return
+	}
+	defer db.Close()
+
 	coll := db.Collection(d)
-	var it *mgo.Iter
-	it = coll.C.Pipe([]bson.M{
-		bson.M{
+
+	// aggregate
+	it := coll.Pipe([]bson.M{
+		{
 			"$group": bson.M{
-				"_id": bson.D{
-					bson.DocElem{
-						Name:  "timestamp",
-						Value: "$timestamp",
-					},
-					bson.DocElem{
-						Name:  "crid",
-						Value: "$crid",
-					},
-				},
-				"dups": bson.M{
-					"$addToSet": "$_id",
-				},
-				"count": bson.M{
-					"$sum": 1,
-				},
+				"_id":   bson.D{{Name: "timestamp", Value: "$timestamp"}, {Name: "crid", Value: "$crid"}},
+				"dups":  bson.M{"$addToSet": "$_id"},
+				"count": bson.M{"$sum": 1},
 			},
 		},
-		bson.M{
-			"$match": bson.M{
-				"count": bson.M{
-					"$gt": 1,
-				},
-			},
+		{
+			"$match": bson.M{"count": bson.M{"$gt": 1}},
 		},
 	}).AllowDiskUse().Iter()
+
+	// delete duplicates
 	for {
 		doc := struct {
 			Dups []bson.ObjectId `bson:"dups"`
@@ -85,9 +72,7 @@ func main() {
 			ids := doc.Dups[1:]
 			// in most circumstances, only one dup, so just range
 			for _, id := range ids {
-				coll.C.Remove(bson.M{
-					"_id": id,
-				})
+				coll.Remove(bson.M{"_id": id})
 			}
 		}
 	}

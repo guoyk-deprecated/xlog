@@ -5,6 +5,19 @@ import (
 	"time"
 
 	"github.com/globalsign/mgo"
+	"github.com/globalsign/mgo/bson"
+	"errors"
+)
+
+var (
+	// IndexedFields fields needed to be indexed
+	IndexedFields = []string{"timestamp", "hostname", "env", "project", "topic", "crid"}
+
+	// DistinctFields fields can be queried as distinct
+	DistinctFields = []string{"hostname", "env", "project", "topic"}
+
+	// ErrInvalidField field is invalid
+	ErrInvalidField = errors.New("invalid field")
 )
 
 // Database is a wrapper of mgo.Database
@@ -13,9 +26,6 @@ type Database struct {
 
 	// CollectionPrefix prefix of collections in database
 	CollectionPrefix string
-
-	// Bulk pending log entries to insert, grouped by collection name
-	Bulk map[string][]LogEntry
 }
 
 // DialDatabase connect a mongo database with options
@@ -27,85 +37,58 @@ func DialDatabase(opt Options) (db *Database, err error) {
 	db = &Database{
 		DB:               session.DB(opt.Mongo.DB),
 		CollectionPrefix: opt.Mongo.Collection,
-		Bulk:             map[string][]LogEntry{},
 	}
 	return
 }
 
-// Close close the underlaying session
+// Close close the underlying session
 func (d *Database) Close() {
 	d.DB.Session.Close()
 }
 
-// CollectionName compose collection name for LogEntry
-func (d *Database) CollectionName(ts time.Time) string {
-	return fmt.Sprintf(
-		"%s%04d%02d%02d",
-		d.CollectionPrefix,
-		ts.Year(),
-		ts.Month(),
-		ts.Day(),
-	)
+// CollectionName get collection name by date
+func (d *Database) CollectionName(t time.Time) string {
+	return fmt.Sprintf("%s%04d%02d%02d", d.CollectionPrefix, t.Year(), t.Month(), t.Day())
 }
 
-// Collection get collection by date string
-func (d *Database) Collection(t time.Time) (c *Collection) {
-	c = &Collection{Prefix: d.CollectionPrefix, Date: t}
-	return &Collection{
-		C:      d.DB.C(d.CollectionName(t)),
-		Prefix: d.CollectionPrefix,
-		Date:   t,
+// Collection get collection by date
+func (d *Database) Collection(t time.Time) *mgo.Collection {
+	return d.DB.C(d.CollectionName(t))
+}
+
+// Insert insert a RecordConvertible, choose collection automatically
+func (d *Database) Insert(rc RecordConvertible) (err error) {
+	var r Record
+	if r, err = rc.ToRecord(); err != nil {
+		return
 	}
+	return d.Collection(r.Timestamp).Insert(&r)
 }
 
-// Insert insert a log entry, choose collection automatically
-func (d *Database) Insert(le LogEntry) (err error) {
-	err = d.DB.C(d.CollectionName(le.Timestamp)).Insert(&le)
-	return
+// EnableSharding enable sharding on collection of the day
+func (d *Database) EnableSharding(t time.Time) error {
+	return d.DB.Run(bson.D{
+		{
+			Name:  "shardCollection",
+			Value: d.DB.Name + "." + d.CollectionName(t),
+		},
+		{
+			Name:  "key",
+			Value: bson.M{"timestamp": "hashed"},
+		},
+	}, nil)
 }
 
-// BulkInsertionStart start a bulk insertion with possible multiple collections invovled
-func (d *Database) BulkInsertionStart() {
-	// just clear
-	d.BulkInsertionClear()
-}
-
-// BulkInsert record a log entry to bulk insertion
-func (d *Database) BulkInsert(le LogEntry) {
-	coll := d.CollectionName(le.Timestamp)
-	// ensure slice exist
-	if d.Bulk[coll] == nil {
-		d.Bulk[coll] = []LogEntry{}
-	}
-	// append slice
-	d.Bulk[coll] = append(d.Bulk[coll], le)
-}
-
-// BulkInsertionCommit commit the whole insertion
-func (d *Database) BulkInsertionCommit() (err error) {
-	// prepare slice of bson.M
-	bs := []interface{}{}
-	for coll, les := range d.Bulk {
-		// clear and reuse slice of bson.M
-		bs = bs[:0]
-		// convert LogEntry to bson.M
-		for _, le := range les {
-			bs = append(bs, le)
-		}
-		// insert mutiple documents
-		if err = d.DB.C(coll).Insert(bs...); err != nil {
+// EnsureIndexes ensure indexes for collection of the day
+func (d *Database) EnsureIndexes(t time.Time) (err error) {
+	coll := d.Collection(t)
+	for _, field := range IndexedFields {
+		if err = coll.EnsureIndex(mgo.Index{
+			Key:        []string{field},
+			Background: true,
+		}); err != nil {
 			return
 		}
 	}
-	// clear bulk
-	d.BulkInsertionClear()
 	return
-}
-
-// BulkInsertionClear clear a bulk insertion
-func (d *Database) BulkInsertionClear() {
-	// clear and resuse space of previous Bulk
-	for k, v := range d.Bulk {
-		d.Bulk[k] = v[:0]
-	}
 }

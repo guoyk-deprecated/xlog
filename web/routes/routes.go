@@ -1,10 +1,6 @@
 package routes
 
 import (
-	"fmt"
-	"net/http"
-	"time"
-
 	"github.com/novakit/nova"
 	"github.com/novakit/router"
 	"github.com/novakit/view"
@@ -12,6 +8,24 @@ import (
 	"github.com/yankeguo/xlog/web/modules"
 )
 
+// Route mount all routes on nova.Nova
+func Route(n *nova.Nova) {
+	r := router.Route(n)
+	// query API
+	r.Post("/api/query").Use(routeQuery)
+}
+
+// V short-hand for view.Extract(c)
+func V(c *nova.Context) *view.View {
+	return view.Extract(c)
+}
+
+// D short-hand for modules.Database(c)
+func D(c *nova.Context) *xlog.Database {
+	return modules.Database(c)
+}
+
+/*
 func dateInfo(t time.Time) string {
 	now := time.Now()
 	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
@@ -33,14 +47,6 @@ func extractURLDate(c *nova.Context) (date time.Time, dateStr string, err error)
 
 func formatURLDate(t time.Time) string {
 	return fmt.Sprintf("%04d-%02d-%02d", t.Year(), t.Month(), t.Day())
-}
-
-// Route mount all routes on nova.Nova
-func Route(n *nova.Nova) {
-	r := router.Route(n)
-	r.Get("/").Use(routeIndex)
-	r.Get("/:date").Use(routeShow)
-	r.Get("/:date/hints").Use(routeHints)
 }
 
 func routeIndex(c *nova.Context) (err error) {
@@ -72,11 +78,11 @@ func routeShow(c *nova.Context) (err error) {
 	}
 	// parse query
 	var q xlog.Query
-	if q, err = xlog.ParseQuery(c.Req); err != nil {
+	if q, err = xlog.ParseForm(c.Req); err != nil {
 		return
 	}
 	// results
-	var results []xlog.LogEntry
+	var results []xlog.Record
 	if err = coll.Execute(q, &results); err != nil {
 		return
 	}
@@ -112,3 +118,5 @@ func routeHints(c *nova.Context) (err error) {
 	v.JSON(ret)
 	return
 }
+
+*/

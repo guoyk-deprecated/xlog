@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/yankeguo/xlog"
+	"github.com/yankeguo/xlog/inputs"
 )
 
 var (
@@ -25,7 +26,8 @@ func main() {
 	// options flag
 	var err error
 	if err = xlog.ParseOptionsFlag(&options); err != nil {
-		panic(err)
+		log.Println("failed to load config,", err)
+		return
 	}
 
 	// create goroutines for each redis url
@@ -66,62 +68,42 @@ func beaterRoutine(redisURL string) (err error) {
 	// maintain shutdown group
 	shutdownGroup.Add(1)
 	defer shutdownGroup.Done()
-	// beater
-	var bt *xlog.Beater
-	if bt, err = xlog.DialBeater(redisURL, options); err != nil {
+	// redis input
+	var ri inputs.Input
+	if ri, err = inputs.DialRedisInput(redisURL, options.Redis.Key); err != nil {
 		return
 	}
-	defer bt.Close()
+	defer ri.Close()
 	// database
 	var db *xlog.Database
 	if db, err = xlog.DialDatabase(options); err != nil {
 		return
 	}
 	defer db.Close()
-	// variables
-	var (
-		be xlog.BeatEntry
-		le xlog.LogEntry
-	)
 	// main loop
 	for {
-		// check shutdown flag
+		// check shutdown flag, clear err
 		if shutdownMark {
-			return nil
+			return
 		}
-		// read next beat event
-		if err = bt.NextEvent(&be); err != nil {
-			if err == xlog.ErrBeaterTimeout {
-				// timeout is normal
-				continue
-			} else if err == xlog.ErrBeaterMalformed {
-				if options.Verbose {
-					log.Println("non-JSON beat event detected")
-				}
-				// ignore malformed
-				continue
-			} else {
-				// redis went wrong, stop subroutine
-				return
-			}
+		// read next event
+		var rc xlog.RecordConvertible
+		if rc, err = ri.Next(); err != nil {
+			// redis went wrong, stop subroutine
+			return
 		}
-		// convert beat entry to log entry
-		if !be.Convert(&le) {
-			if options.Verbose {
-				log.Println("failed to convert beat event:")
-				log.Println("  beat.hostname =", be.Beat.Hostname)
-				log.Println("  source        =", be.Source)
-				log.Println("  message       =", be.Message)
-			}
-			// ignore on failed
+		// skip if timeout
+		if rc == nil {
 			continue
 		}
 		// insert document
-		if err = db.Insert(le); err != nil {
-			// resend with RPUSH
-			bt.Recover(be)
-			// stop on failed
-			return
+		if err = db.Insert(rc); err != nil {
+			// resend with RPUSH and return, unless it's a conversion error
+			if !xlog.IsRecordConversionError(err) {
+				ri.Recover(rc)
+				// stop on failed
+				return
+			}
 		}
 		// increase counter
 		atomic.AddUint64(&counter, 1)

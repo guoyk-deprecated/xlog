@@ -32,19 +32,19 @@ func main() {
 		panic(err)
 	}
 
-	// 02:00 of the first day of the year
+	// Jan 01, 02:00 of the year
 	date := time.Date(year, time.January, 1, 2, 0, 0, 0, time.UTC)
+
 	// iterate whole year
 	for {
-		coll := db.Collection(date)
-		log.Println("allocating:", coll.C.Name)
+		log.Println("allocating:", date)
 		// shard
-		if err = coll.EnableSharding(); err != nil {
-			log.Println("failed to enable sharding:", coll.C.Name, err)
+		if err = db.EnableSharding(date); err != nil {
+			log.Println("failed to enable sharding:", date, err)
 		}
 		// index
-		if err = coll.EnsureIndexes(); err != nil {
-			log.Println("failed to ensure indexes:", coll.C.Name, err)
+		if err = db.EnsureIndexes(date); err != nil {
+			log.Println("failed to ensure indexes:", date, err)
 		}
 		// next day
 		date = date.Add(time.Hour * 24)
