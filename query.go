@@ -50,6 +50,12 @@ func (q Query) Validated() (n Query) {
 	if n.Offset < 0 {
 		n.Offset = 0
 	}
+	// compact fields
+	n.Crid = CompactField(n.Crid)
+	n.Hostname = CompactField(n.Hostname)
+	n.Env = CompactField(n.Env)
+	n.Project = CompactField(n.Project)
+	n.Topic = CompactField(n.Topic)
 	return
 }
 

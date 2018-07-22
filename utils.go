@@ -97,23 +97,31 @@ func FormatStorageSize(bytes int) string {
 	return ""
 }
 
-// BSONPutMatchField put a comma separated field for match
+// BSONPutMatchField put a possible comma separated field for match
 func BSONPutMatchField(m bson.M, key string, val string) {
-	val = strings.TrimSpace(val)
 	// skip empty value
 	if len(val) == 0 {
 		return
 	}
 	// use $in for comma separated values
 	if strings.Contains(val, ",") {
-		values := make([]string, 0)
-		sl := strings.Split(val, ",")
-		for _, s := range sl {
-			values = append(values, strings.TrimSpace(s))
-		}
-		m[key] = bson.M{"$in": values}
+		m[key] = bson.M{"$in": strings.Split(val, ",")}
 	} else {
 		m[key] = val
 	}
 	return
+}
+
+// CompactField compact query field for possible comma separated values
+func CompactField(str string) string {
+	str = strings.TrimSpace(str)
+	if strings.Contains(str, ",") {
+		var values = make([]string, 0)
+		var splits = strings.Split(str, ",")
+		for _, s := range splits {
+			values = append(values, strings.TrimSpace(s))
+		}
+		return strings.Join(values, ",")
+	}
+	return str
 }
