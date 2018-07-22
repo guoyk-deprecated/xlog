@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/go-redis/redis"
-	"github.com/yankeguo/xlog"
 	"github.com/pkg/errors"
+	"github.com/yankeguo/xlog"
 )
 
 // RedisInput a redis client wrapper for filebeat events

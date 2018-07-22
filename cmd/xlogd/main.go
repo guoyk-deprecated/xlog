@@ -31,8 +31,8 @@ func main() {
 	}
 
 	// create goroutines for each redis url
-	for _, url := range options.Redis.URLs {
-		go beaterRoutineLoop(url)
+	for i := range options.Redis.URLs {
+		go inputRoutineGuarded(i)
 	}
 
 	// create goroutine for counter reporting
@@ -49,11 +49,11 @@ func main() {
 	shutdownGroup.Wait()
 }
 
-func beaterRoutineLoop(redisURL string) {
+func inputRoutineGuarded(idx int) {
 	var err error
 	for {
-		if err = beaterRoutine(redisURL); err != nil {
-			log.Println("subroutine failed :", redisURL, ":", err)
+		if err = inputRoutine(idx); err != nil {
+			log.Println("input routine failed :", idx, ":", err)
 		}
 		if shutdownMark {
 			break
@@ -62,15 +62,15 @@ func beaterRoutineLoop(redisURL string) {
 	}
 }
 
-func beaterRoutine(redisURL string) (err error) {
-	log.Println("subroutine created:", redisURL)
-	defer log.Println("subroutine exited:", redisURL)
+func inputRoutine(idx int) (err error) {
+	log.Println("input routine created:", idx)
+	defer log.Println("input routine exited:", idx)
 	// maintain shutdown group
 	shutdownGroup.Add(1)
 	defer shutdownGroup.Done()
 	// redis input
 	var ri inputs.Input
-	if ri, err = inputs.DialRedisInput(redisURL, options.Redis.Key); err != nil {
+	if ri, err = inputs.DialRedisInput(options.Redis.URLs[idx], options.Redis.Key); err != nil {
 		return
 	}
 	defer ri.Close()
@@ -89,7 +89,7 @@ func beaterRoutine(redisURL string) (err error) {
 		// read next event
 		var rc xlog.RecordConvertible
 		if rc, err = ri.Next(); err != nil {
-			// redis went wrong, stop subroutine
+			// redis went wrong, stop input routine
 			return
 		}
 		// skip if timeout

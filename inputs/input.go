@@ -1,8 +1,8 @@
 package inputs
 
 import (
-	"io"
 	"github.com/yankeguo/xlog"
+	"io"
 )
 
 // Input abstract a input type

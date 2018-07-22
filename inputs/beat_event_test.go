@@ -1,8 +1,8 @@
 package inputs
 
 import (
-	"testing"
 	"github.com/yankeguo/xlog"
+	"testing"
 	"time"
 )
 

@@ -1,10 +1,10 @@
 package inputs
 
 import (
+	"github.com/yankeguo/xlog"
 	"regexp"
 	"strings"
 	"time"
-	"github.com/yankeguo/xlog"
 )
 
 var (

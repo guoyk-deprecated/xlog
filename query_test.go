@@ -1,9 +1,9 @@
 package xlog
 
 import (
-	"testing"
 	"encoding/json"
 	"github.com/globalsign/mgo/bson"
+	"testing"
 )
 
 func TestQuery_Marshal(t *testing.T) {

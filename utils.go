@@ -1,9 +1,10 @@
 package xlog
 
 import (
-	"time"
-	"strings"
 	"fmt"
+	"github.com/globalsign/mgo/bson"
+	"strings"
+	"time"
 )
 
 var (
@@ -58,6 +59,31 @@ func ParseTimeRangeOfDay(s string) (begin time.Time, end time.Time) {
 	return
 }
 
+// BeginningOfDay beginning of day, to UTC
+func BeginningOfDay() time.Time {
+	return BeginningOfTheDay(time.Now())
+}
+
+// EndOfDay end of day, to UTC
+func EndOfDay() time.Time {
+	return EndOfTheDay(time.Now())
+}
+
+// BeginningOfTheDay beginning of the day specified, to UTC
+func BeginningOfTheDay(t time.Time) time.Time {
+	return time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, time.UTC)
+}
+
+// EndOfTheDay end of the day specified, to UTC
+func EndOfTheDay(t time.Time) time.Time {
+	return BeginningOfTheDay(t).Add(time.Hour * 24)
+}
+
+// SameDay the two time is the same day
+func SameDay(t1 time.Time, t2 time.Time) bool {
+	return t1.Year() == t2.Year() && t1.Month() == t2.Month() && t1.Day() == t2.Day()
+}
+
 // FormatStorageSize format a storage size
 func FormatStorageSize(bytes int) string {
 	if bytes <= 0 {
@@ -69,4 +95,25 @@ func FormatStorageSize(bytes int) string {
 		}
 	}
 	return ""
+}
+
+// BSONPutMatchField put a comma separated field for match
+func BSONPutMatchField(m bson.M, key string, val string) {
+	val = strings.TrimSpace(val)
+	// skip empty value
+	if len(val) == 0 {
+		return
+	}
+	// use $in for comma separated values
+	if strings.Contains(val, ",") {
+		values := make([]string, 0)
+		sl := strings.Split(val, ",")
+		for _, s := range sl {
+			values = append(values, strings.TrimSpace(s))
+		}
+		m[key] = bson.M{"$in": values}
+	} else {
+		m[key] = val
+	}
+	return
 }

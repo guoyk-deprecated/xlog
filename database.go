@@ -4,10 +4,13 @@ import (
 	"fmt"
 	"time"
 
+	"errors"
 	"github.com/globalsign/mgo"
 	"github.com/globalsign/mgo/bson"
-	"errors"
 )
+
+// QueryLimit limit of result returned
+const QueryLimit = 100
 
 var (
 	// IndexedFields fields needed to be indexed
@@ -18,6 +21,9 @@ var (
 
 	// ErrInvalidField field is invalid
 	ErrInvalidField = errors.New("invalid field")
+
+	// ErrBadQuery query is bad
+	ErrBadQuery = errors.New("bad query")
 )
 
 // Database is a wrapper of mgo.Database
@@ -63,6 +69,32 @@ func (d *Database) Insert(rc RecordConvertible) (err error) {
 		return
 	}
 	return d.Collection(r.Timestamp).Insert(&r)
+}
+
+// Search execute a query
+func (d *Database) Search(q Query) (ret Result, err error) {
+	// validate
+	if q.Timestamp == nil || q.Timestamp.Beginning == nil || q.Timestamp.End == nil {
+		err = ErrBadQuery
+		return
+	}
+	if q.Offset < 0 {
+		err = ErrBadQuery
+		return
+	}
+	// find
+	var records []Record
+	coll := d.Collection(*q.Timestamp.Beginning)
+	if err = coll.Find(q.ToMatch()).Sort(q.Sort()).Skip(q.Offset).Limit(QueryLimit).All(&records); err != nil {
+		return
+	}
+	if records == nil {
+		records = []Record{}
+	}
+	// build result
+	ret.Records = records
+	ret.Limit = QueryLimit
+	return
 }
 
 // EnableSharding enable sharding on collection of the day
