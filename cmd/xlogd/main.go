@@ -26,8 +26,7 @@ func main() {
 	// options flag
 	var err error
 	if err = xlog.ParseOptionsFlag(&options); err != nil {
-		log.Println("failed to load config,", err)
-		return
+		panic(err)
 	}
 
 	// create goroutines for each redis url
@@ -98,15 +97,18 @@ func inputRoutine(idx int) (err error) {
 		}
 		// insert document
 		if err = db.Insert(rc); err != nil {
-			// resend with RPUSH and return, unless it's a conversion error
+			// recover with RPUSH and return, unless it's a conversion error
 			if !xlog.IsRecordConversionError(err) {
 				ri.Recover(rc)
 				// stop on failed
 				return
 			}
+			// clear conversion error
+			err = nil
+		} else {
+			// increase counter
+			atomic.AddUint64(&counter, 1)
 		}
-		// increase counter
-		atomic.AddUint64(&counter, 1)
 	}
 }
 
