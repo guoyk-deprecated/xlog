@@ -12,7 +12,7 @@ import (
 func Route(n *nova.Nova) {
 	r := router.Route(n)
 	// query API
-	r.Post("/api/query").Use(routeQuery)
+	r.Post("/api/search").Use(routeSearch)
 	// trends API
 	r.Post("/api/trends").Use(routeTrends)
 }

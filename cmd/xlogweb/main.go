@@ -24,7 +24,7 @@ func main() {
 
 	n := nova.New()
 	n.Env = nova.Env(options.Env())
-	n.Use(static.Handler(static.Options{BinFS: !options.Dev}))
+	n.Use(static.Handler(static.Options{BinFS: !options.Dev, Index: true}))
 	n.Use(view.Handler(view.Options{BinFS: !options.Dev}))
 	n.Use(modules.Handler(options))
 	routes.Route(n)

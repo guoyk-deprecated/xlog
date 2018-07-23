@@ -1,6 +1,7 @@
 package xlog
 
 import (
+	"github.com/globalsign/mgo/bson"
 	"time"
 )
 
@@ -39,13 +40,14 @@ type RecordConvertible interface {
 
 // Record a log record in collection
 type Record struct {
-	Timestamp time.Time `bson:"timestamp" json:"timestamp"` // the time when record produced
-	Hostname  string    `bson:"hostname" json:"hostname"`   // the server where record produced
-	Env       string    `bson:"env" json:"env"`             // environment where record produced, for example 'dev'
-	Project   string    `bson:"project" json:"project"`     // project name
-	Topic     string    `bson:"topic" json:"topic"`         // topic of log, for example 'access', 'err'
-	Crid      string    `bson:"crid" json:"crid"`           // correlation id
-	Message   string    `bson:"message" json:"message"`     // the actual log message body
+	ID        bson.ObjectId `bson:"_id,omitempty" json:"_id,omitempty"` // the record id in mongodb
+	Timestamp time.Time     `bson:"timestamp" json:"timestamp"`         // the time when record produced
+	Hostname  string        `bson:"hostname" json:"hostname"`           // the server where record produced
+	Env       string        `bson:"env" json:"env"`                     // environment where record produced, for example 'dev'
+	Project   string        `bson:"project" json:"project"`             // project name
+	Topic     string        `bson:"topic" json:"topic"`                 // topic of log, for example 'access', 'err'
+	Crid      string        `bson:"crid" json:"crid"`                   // correlation id
+	Message   string        `bson:"message" json:"message"`             // the actual log message body
 }
 
 // ToRecord implements RecordConvertible
