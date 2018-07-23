@@ -9,6 +9,7 @@ import (
 type TimeRange struct {
 	Beginning time.Time `json:"beginning,omitempty"` // time start
 	End       time.Time `json:"end,omitempty"`       // time end
+	Ascendant bool      `json:"ascendant" bson:"-"`  // timestamp ascendant, default to false
 }
 
 // Query query
@@ -20,8 +21,7 @@ type Query struct {
 	Project   string    `json:"project,omitempty"`   // project
 	Topic     string    `json:"topic,omitempty"`     // topic
 
-	Offset    int  `json:"offset" bson:"-"`    // offset
-	Ascendant bool `json:"ascendant" bson:"-"` // timestamp ascendant, default to false
+	Skip int `json:"skip" bson:"-"` // skip
 }
 
 // Validated returns a query with Timestamp fixed
@@ -41,8 +41,8 @@ func (q Query) Validated() (n Query) {
 		n.Timestamp.End = EndOfTheDay(n.Timestamp.Beginning)
 	}
 	// fix offset
-	if n.Offset < 0 {
-		n.Offset = 0
+	if n.Skip < 0 {
+		n.Skip = 0
 	}
 	// compact fields
 	n.Crid = CompactField(n.Crid)
@@ -55,7 +55,7 @@ func (q Query) Validated() (n Query) {
 
 // Sort field to sort for mongodb
 func (q Query) Sort() string {
-	if q.Ascendant {
+	if q.Timestamp.Ascendant {
 		return "timestamp"
 	} else {
 		return "-timestamp"

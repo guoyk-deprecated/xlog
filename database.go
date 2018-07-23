@@ -76,7 +76,7 @@ func (d *Database) Search(q Query) (ret Result, err error) {
 	// find
 	var records []Record
 	coll := d.Collection(q.Timestamp.Beginning)
-	if err = coll.Find(q.ToMatch()).Sort(q.Sort()).Skip(q.Offset).Limit(QueryLimit).All(&records); err != nil {
+	if err = coll.Find(q.ToMatch()).Sort(q.Sort()).Skip(q.Skip).Limit(QueryLimit).All(&records); err != nil {
 		return
 	}
 	if records == nil {
