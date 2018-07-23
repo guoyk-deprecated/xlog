@@ -357,5 +357,6 @@ pre.record-message {
   padding: 8px;
   background-color: #f8f8f8;
   word-wrap: break-word;
+  white-space: pre-wrap;
 }
 </style>
