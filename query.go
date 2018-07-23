@@ -2,24 +2,16 @@ package xlog
 
 import (
 	"github.com/globalsign/mgo/bson"
-	"time"
 )
-
-// TimeRange time range
-type TimeRange struct {
-	Beginning time.Time `json:"beginning,omitempty"` // time start
-	End       time.Time `json:"end,omitempty"`       // time end
-	Ascendant bool      `json:"ascendant" bson:"-"`  // timestamp ascendant, default to false
-}
 
 // Query query
 type Query struct {
-	Timestamp TimeRange `json:"timestamp,omitempty"` // timestamp
-	Crid      string    `json:"crid,omitempty"`      // crid
-	Hostname  string    `json:"hostname,omitempty"`  // hostname
-	Env       string    `json:"env,omitempty"`       // env
-	Project   string    `json:"project,omitempty"`   // project
-	Topic     string    `json:"topic,omitempty"`     // topic
+	Timestamp Period `json:"timestamp,omitempty"` // timestamp
+	Crid      string `json:"crid,omitempty"`      // crid
+	Hostname  string `json:"hostname,omitempty"`  // hostname
+	Env       string `json:"env,omitempty"`       // env
+	Project   string `json:"project,omitempty"`   // project
+	Topic     string `json:"topic,omitempty"`     // topic
 
 	Skip int `json:"skip" bson:"-"` // skip
 }
@@ -53,6 +45,17 @@ func (q Query) Validated() (n Query) {
 	return
 }
 
+func (q Query) TrendQueries() []Query {
+	qs := make([]Query, 0)
+	ts := q.Timestamp.TrendPeriods()
+	for _, t := range ts {
+		nq := q
+		nq.Timestamp = t
+		qs = append(qs, nq)
+	}
+	return qs
+}
+
 // Sort field to sort for mongodb
 func (q Query) Sort() string {
 	if q.Timestamp.Ascendant {
@@ -65,10 +68,7 @@ func (q Query) Sort() string {
 // ToMatch convert to bson.M for query match
 func (q Query) ToMatch() (m bson.M) {
 	m = bson.M{}
-	m["timestamp"] = bson.M{
-		"$gte": q.Timestamp.Beginning,
-		"$lt":  q.Timestamp.End,
-	}
+	m["timestamp"] = q.Timestamp.ToMatch()
 	BSONPutMatchField(m, "crid", q.Crid)
 	BSONPutMatchField(m, "hostname", q.Hostname)
 	BSONPutMatchField(m, "env", q.Env)

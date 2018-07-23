@@ -73,9 +73,9 @@ func (d *Database) Insert(rc RecordConvertible) (err error) {
 
 // Search execute a query
 func (d *Database) Search(q Query) (ret Result, err error) {
+	coll := d.Collection(q.Timestamp.Beginning)
 	// find
 	var records []Record
-	coll := d.Collection(q.Timestamp.Beginning)
 	if err = coll.Find(q.ToMatch()).Sort(q.Sort()).Skip(q.Skip).Limit(QueryLimit).All(&records); err != nil {
 		return
 	}
@@ -85,6 +85,26 @@ func (d *Database) Search(q Query) (ret Result, err error) {
 	// build result
 	ret.Records = records
 	ret.Limit = QueryLimit
+	return
+}
+
+// Trends calculate trends from a query
+func (d *Database) Trends(q Query) (rs []Trend, err error) {
+	coll := d.Collection(q.Timestamp.Beginning)
+	// trend queries
+	qs := q.TrendQueries()
+	rs = make([]Trend, 0, len(qs))
+	for _, tq := range qs {
+		var c int
+		if c, err = coll.Find(tq.ToMatch()).Count(); err != nil {
+			return
+		}
+		rs = append(rs, Trend{
+			Beginning: tq.Timestamp.Beginning,
+			End:       tq.Timestamp.End,
+			Count:     c,
+		})
+	}
 	return
 }
 

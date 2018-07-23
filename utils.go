@@ -97,7 +97,7 @@ func FormatStorageSize(bytes int) string {
 	return ""
 }
 
-// BSONPutMatchField put a possible comma separated field for match
+// BSONPutMatchField put a possible comma separated field for match, skip empty
 func BSONPutMatchField(m bson.M, key string, val string) {
 	// skip empty value
 	if len(val) == 0 {
