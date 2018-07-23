@@ -50,6 +50,7 @@
 <script>
 import TrendsChart from "./components/TrendsChart.js";
 import moment from "moment";
+import VueTimers from "vue-timers/mixin";
 import { decodeXQL, convertTrendsChartData, formatMoment } from "./utils";
 
 // constants
@@ -86,6 +87,7 @@ function initialPeriod() {
   let e = moment();
   let b;
   if (e.hour() > 1) {
+    b = e.clone().subtract(1, "hour");
   } else {
     b = e
       .clone()
@@ -98,13 +100,16 @@ function initialPeriod() {
 
 export default {
   components: { TrendsChart },
+  mixins: [VueTimers],
+  timers: {
+    autoRefresh: { time: 10000, repeat: true }
+  },
   data() {
     return {
       loadingCounter: 0,
       date: new Date(),
       period: initialPeriod(),
       searchForm: { query: "" },
-      autoRefresh: false,
       quickPeriod: "15m",
       quickPeriodOptions: quickOptions,
       records: [],
@@ -113,31 +118,31 @@ export default {
   },
   computed: {
     autoRefreshBtnType() {
-      return this.autoRefresh ? "success" : "";
+      return this.timers.autoRefresh.isRunning ? "success" : "";
     },
     trendsChartData() {
       return convertTrendsChartData(this.trends);
     },
     isQuickPeriodPickerDisabled() {
-      return this.isLoading() || this.autoRefresh;
+      return this.isLoading() || this.timers.autoRefresh.isRunning;
     },
     isDatePickerVisible() {
       return this.quickPeriod == "manual" || this.quickPeriod == "allday";
     },
     isDatePickerDisabled() {
-      return this.isLoading() || this.autoRefresh;
+      return this.isLoading() || this.timers.autoRefresh.isRunning;
     },
     isPeriodPickerVisible() {
       return this.quickPeriod == "manual";
     },
     isPeriodPickerDisabled() {
-      return this.isLoading() || this.autoRefresh;
+      return this.isLoading() || this.timers.autoRefresh.isRunning;
     },
     isQueryInputDisabled() {
-      return this.isLoading() || this.autoRefresh;
+      return this.isLoading() || this.timers.autoRefresh.isRunning;
     },
     isQueryButtonDisabled() {
-      return this.isLoading() || this.autoRefresh;
+      return this.isLoading() || this.timers.autoRefresh.isRunning;
     }
   },
   mounted() {
@@ -222,7 +227,15 @@ export default {
       }
     },
     onAutoRefreshClicked() {
-      this.autoRefresh = !this.autoRefresh;
+      if (this.timers.autoRefresh.isRunning) {
+        this.$timer.stop("autoRefresh");
+      } else {
+        this.$timer.start("autoRefresh");
+      }
+    },
+    autoRefresh() {
+      this.executeSearch();
+      this.executeTrends();
     },
     buildQuery() {
       let q = {};
