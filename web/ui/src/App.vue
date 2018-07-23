@@ -8,7 +8,7 @@
     </el-select>
     <el-date-picker v-model="date" v-if="isDatePickerVisible" :disabled="isDatePickerDisabled" v-on:change="onDateChanged" :clearable="false" type="date" placeholder="选择日期" size="small" style="width: 10rem;"></el-date-picker>
     <el-time-picker v-model="period" v-if="isPeriodPickerVisible" :disabled="isPeriodPickerDisabled" :clearable="false" is-range range-separator="-" start-placeholder="起始时间" end-placeholder="结束时间" size="small" style="width:16rem;"></el-time-picker>
-    <el-form v-model="searchForm" id="form-search" :inline="true" size="small">
+    <el-form v-model="searchForm" id="form-search" :inline="true" size="small" @submit.native.prevent>
      <el-form-item>
         <el-tooltip class="item" effect="dark" content="冒号 : 分割键值对，逗号 , 分割多个值，分号 ; 分割多个键值对" placement="bottom-start">
           <el-input id="input-query" :disabled="isQueryInputDisabled" v-model="searchForm.query" placeholder="查询条件，如 'topic : access, err ; project : sma'"></el-input>
@@ -100,7 +100,7 @@ export default {
   components: { TrendsChart },
   data() {
     return {
-      _loadingCount: 0,
+      loadingCounter: 0,
       date: new Date(),
       period: initialPeriod(),
       searchForm: { query: "" },
@@ -146,13 +146,13 @@ export default {
   },
   methods: {
     startLoading() {
-      this._loadingCount++;
+      this.loadingCounter++;
     },
     endLoading() {
-      this._loadingCount--;
+      this.loadingCounter--;
     },
     isLoading() {
-      return this._loadingCount > 0;
+      return this.loadingCounter > 0;
     },
     executeSearch() {
       let q = this.buildQuery();
@@ -164,7 +164,6 @@ export default {
         .then(data => {
           this.endLoading();
           this.records = data.result.records;
-          console.log(data);
         })
         .catch(res => {
           this.endLoading();
@@ -290,7 +289,6 @@ export default {
         }
       }
       decodeXQL(this.searchForm.query, q);
-      console.log(JSON.stringify(q));
       return q;
     }
   }

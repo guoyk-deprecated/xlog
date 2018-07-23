@@ -35,7 +35,8 @@ export function convertTrendsChartData(trends) {
     datasets: [
       {
         data: [],
-        borderWidth: 1
+        borderWidth: 1,
+        backgroundColor: "#7f8c8d"
       }
     ]
   };
