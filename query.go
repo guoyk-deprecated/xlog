@@ -2,6 +2,7 @@ package xlog
 
 import (
 	"github.com/globalsign/mgo/bson"
+	"time"
 )
 
 // Query query
@@ -70,5 +71,31 @@ func (q Query) ToMatch() (m bson.M) {
 	BSONPutMatchField(m, "project", q.Project)
 	BSONPutMatchField(m, "topic", q.Topic)
 	BSONPutTextField(m, q.Message)
+	return
+}
+
+// IsPerMinute should trend pipeline calculation is minutes-based
+func (q Query) IsPerMinute() bool {
+	return q.Timestamp.End.Sub(q.Timestamp.Beginning) <= time.Hour*2
+}
+
+// ToGroup convert to bson.M for trends pipeline calculation
+func (q Query) ToGroup() (m bson.M) {
+	id := bson.M{
+		"hour": bson.M{
+			"$hour": "$timestamp",
+		},
+	}
+	if q.IsPerMinute() {
+		id["minute"] = bson.M{
+			"$minute": "$timestamp",
+		}
+	}
+	m = bson.M{
+		"_id": id,
+		"count": bson.M{
+			"$sum": 1,
+		},
+	}
 	return
 }

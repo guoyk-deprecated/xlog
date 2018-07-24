@@ -80,7 +80,7 @@ func (d *Database) Search(q Query) (ret Result, err error) {
 	coll := d.Collection(q.Timestamp.Beginning)
 	// find
 	var records []Record
-	if err = coll.Find(q.ToMatch()).Sort(q.Sort()).Skip(q.Skip).Limit(QueryLimit).All(&records); err != nil {
+	if err = coll.Find(q.ToMatch()).Sort(q.Sort()).Skip(q.Skip).Limit(QueryLimit).SetMaxTime(time.Second * 45).All(&records); err != nil {
 		return
 	}
 	if records == nil {
@@ -94,20 +94,12 @@ func (d *Database) Search(q Query) (ret Result, err error) {
 
 // Trends calculate trends from a query
 func (d *Database) Trends(q Query) (rs []Trend, err error) {
+	// find collection
 	coll := d.Collection(q.Timestamp.Beginning)
-	// trend queries
-	qs := q.TrendQueries()
-	rs = make([]Trend, 0, len(qs))
-	for _, tq := range qs {
-		var c int
-		if c, err = coll.Find(tq.ToMatch()).Count(); err != nil {
-			return
-		}
-		rs = append(rs, Trend{
-			Beginning: tq.Timestamp.Beginning,
-			End:       tq.Timestamp.End,
-			Count:     c,
-		})
+	// execute pipeline
+	rs = make([]Trend, 0)
+	if err = coll.Pipe([]bson.M{{"$match": q.ToMatch()}, {"$group": q.ToGroup()}}).SetMaxTime(time.Second * 45).All(&rs); err != nil {
+		return
 	}
 	return
 }

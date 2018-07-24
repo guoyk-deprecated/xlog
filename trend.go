@@ -1,9 +1,11 @@
 package xlog
 
-import "time"
+type TrendID struct {
+	Hour   int `json:"hour" bson:"hour"`
+	Minute int `json:"minute" bson:"minute"`
+}
 
 type Trend struct {
-	Beginning time.Time `json:"beginning"`
-	End       time.Time `json:"end"`
-	Count     int       `json:"count"`
+	ID    TrendID `json:"_id" bson:"_id"`
+	Count int     `json:"count" bson:"count"`
 }

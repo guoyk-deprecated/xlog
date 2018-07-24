@@ -43,8 +43,9 @@ export function convertTrendsChartData(trends) {
   for (let trend of trends) {
     let date = new Date();
     data.labels.push(
-      moment(trend.beginning)
-        .utc()
+      moment()
+        .hour(trend._id.hour)
+        .minute(trend._id.minute)
         .format("HH:mm")
     );
     data.datasets[0].data.push(trend.count);
