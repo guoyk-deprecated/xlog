@@ -80,7 +80,7 @@ func (d *Database) Search(q Query) (ret Result, err error) {
 	coll := d.Collection(q.Timestamp.Beginning)
 	// find
 	var records []Record
-	if err = coll.Find(q.ToMatch()).Sort(q.Sort()).Skip(q.Skip).Limit(QueryLimit).All(&records); err != nil {
+	if err = coll.Find(q.ToMatch()).Sort(q.Sort()).Skip(q.Skip).Limit(QueryLimit).SetMaxTime(time.Second * 45).All(&records); err != nil {
 		return
 	}
 	if records == nil {
@@ -100,7 +100,7 @@ func (d *Database) Trends(q Query) (rs []Trend, err error) {
 	rs = make([]Trend, 0, len(qs))
 	for _, tq := range qs {
 		var c int
-		if c, err = coll.Find(tq.ToMatch()).Count(); err != nil {
+		if c, err = coll.Find(tq.ToMatch()).SetMaxTime(time.Second * 10).Count(); err != nil {
 			return
 		}
 		rs = append(rs, Trend{
