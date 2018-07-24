@@ -80,7 +80,7 @@ func main() {
 		crid := make([]byte, 8)
 		rand.Read(crid)
 		cridStr := hex.EncodeToString(crid)
-		dateStr := time.Now().Format("2006/01/02 15:04:05.000")
+		dateStr := time.Now().Add(time.Second * time.Duration(900-rand.Intn(600))).Format("2006/01/02 15:04:05.000")
 		// create beat event
 		be := inputs.BeatEvent{
 			Beat: inputs.BeatInfo{
