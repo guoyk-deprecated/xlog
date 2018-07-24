@@ -97,19 +97,46 @@ func FormatStorageSize(bytes int) string {
 	return ""
 }
 
-// BSONPutMatchField put a possible comma separated field for match, skip empty
-func BSONPutMatchField(m bson.M, key string, val string) {
+// BSONPutMatchField choose direct match or $in automatically
+func BSONPutMatchField(m bson.M, key string, val []string) {
 	// skip empty value
 	if len(val) == 0 {
 		return
 	}
 	// use $in for comma separated values
-	if strings.Contains(val, ",") {
-		m[key] = bson.M{"$in": strings.Split(val, ",")}
+	if len(val) > 1 {
+		m[key] = bson.M{"$in": val}
 	} else {
-		m[key] = val
+		m[key] = val[0]
 	}
 	return
+}
+
+// Quote quote a string if not already quoted
+func Quote(s string) string {
+	if len(s) > 1 && strings.HasPrefix(s, "\"") && strings.HasSuffix(s, "\"") {
+		return s
+	}
+	return "\"" + s + "\""
+}
+
+// BSONPutTextField put a text field
+func BSONPutTextField(m bson.M, val []string) {
+	// skip if is missing
+	if len(val) == 0 {
+		return
+	}
+	// re-arrange with quoted
+	var qs string
+	cs := make([]string, 0, len(val))
+	for _, c := range val {
+		cs = append(cs, Quote(c))
+	}
+	qs = strings.Join(cs, " ")
+	// build search
+	m["$text"] = bson.M{
+		"$search": qs,
+	}
 }
 
 // CompactField compact query field for possible comma separated values

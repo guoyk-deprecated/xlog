@@ -16,7 +16,7 @@
       </el-form-item>
       <el-form-item>
         <el-button plain type="success" :disabled="isQueryButtonDisabled" @click="onSearchClicked" icon="el-icon-search">查询</el-button>
-        <el-button id="btn-auto-refresh" :type="autoRefreshBtnType" @click="onAutoRefreshClicked" size="mini" icon="el-icon-refresh" circle></el-button>
+        <el-button id="btn-auto-refresh" :type="autoRefreshBtnType" :disabled="isAutoRefreshButtonDisabled" @click="onAutoRefreshClicked" size="mini" icon="el-icon-refresh" circle></el-button>
       </el-form-item>
     </el-form>
   </el-header>
@@ -143,6 +143,9 @@ export default {
     },
     isQueryButtonDisabled() {
       return this.isLoading() || this.timers.autoRefresh.isRunning;
+    },
+    isAutoRefreshButtonDisabled() {
+      return this.isLoading() && !this.timers.autoRefresh.isRunning;
     }
   },
   mounted() {

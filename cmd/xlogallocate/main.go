@@ -10,21 +10,27 @@ import (
 )
 
 var (
+	year    int
+	shard   bool
 	options xlog.Options
 )
 
 func main() {
 	// options
 	var err error
-	var year int
 	flag.IntVar(&year, "year", 0, "allocate indexes for year")
+	flag.BoolVar(&shard, "shard", false, "enable sharding")
 	if err = xlog.ParseOptionsFlag(&options); err != nil {
 		panic(err)
 	}
 
+	// validate year
 	if year == 0 {
 		panic(errors.New("invalid year input"))
 	}
+
+	// force mongodb tough mode
+	options.Mongo.Tough = true
 
 	// create client
 	var db *xlog.Database
@@ -38,13 +44,17 @@ func main() {
 	// iterate whole year
 	for {
 		log.Println("allocating:", date)
-		// shard
-		if err = db.EnableSharding(date); err != nil {
-			log.Println("failed to enable sharding:", date, err)
+		if shard {
+			// shard
+			if err = db.EnableSharding(date); err != nil {
+				log.Println("failed to enable sharding:", date, err)
+				break
+			}
 		}
 		// index
 		if err = db.EnsureIndexes(date); err != nil {
 			log.Println("failed to ensure indexes:", date, err)
+			break
 		}
 		// next day
 		date = date.Add(time.Hour * 24)

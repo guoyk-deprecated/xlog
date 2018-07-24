@@ -1,6 +1,6 @@
 import moment from "moment";
 
-const XQLFields = ["crid", "env", "project", "topic", "hostname"];
+const XQLFields = ["crid", "env", "project", "topic", "hostname", "message"];
 
 export function decodeXQL(s, out) {
   let kvs = s.split(";");
@@ -20,9 +20,9 @@ export function decodeXQL(s, out) {
           for (let sv of vs) {
             nvs.push(sv.trim());
           }
-          out[k] = nvs.join(",");
+          out[k] = nvs;
         } else {
-          out[k] = v;
+          out[k] = [v];
         }
       }
     }

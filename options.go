@@ -47,6 +47,8 @@ type MongoOptions struct {
 	DB string `yaml:"db"`
 	// Collection mongo collection name
 	Collection string `yaml:"collection"`
+	// Tough no timeout
+	Tough bool `yaml:"tough"`
 }
 
 // WebOptions web options

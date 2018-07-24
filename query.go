@@ -6,12 +6,13 @@ import (
 
 // Query query
 type Query struct {
-	Timestamp Period `json:"timestamp,omitempty"` // timestamp
-	Crid      string `json:"crid,omitempty"`      // crid
-	Hostname  string `json:"hostname,omitempty"`  // hostname
-	Env       string `json:"env,omitempty"`       // env
-	Project   string `json:"project,omitempty"`   // project
-	Topic     string `json:"topic,omitempty"`     // topic
+	Timestamp Period   `json:"timestamp,omitempty"` // timestamp
+	Crid      []string `json:"crid,omitempty"`      // crid, using $in
+	Hostname  []string `json:"hostname,omitempty"`  // hostname, using $in
+	Env       []string `json:"env,omitempty"`       // env, using $in
+	Project   []string `json:"project,omitempty"`   // project, using $in
+	Topic     []string `json:"topic,omitempty"`     // topic, using $in
+	Message   []string `json:"message,omitempty"`   // message content query, basically $and mode
 
 	Skip int `json:"skip" bson:"-"` // skip
 }
@@ -36,12 +37,6 @@ func (q Query) Validated() (n Query) {
 	if n.Skip < 0 {
 		n.Skip = 0
 	}
-	// compact fields
-	n.Crid = CompactField(n.Crid)
-	n.Hostname = CompactField(n.Hostname)
-	n.Env = CompactField(n.Env)
-	n.Project = CompactField(n.Project)
-	n.Topic = CompactField(n.Topic)
 	return
 }
 
@@ -74,5 +69,6 @@ func (q Query) ToMatch() (m bson.M) {
 	BSONPutMatchField(m, "env", q.Env)
 	BSONPutMatchField(m, "project", q.Project)
 	BSONPutMatchField(m, "topic", q.Topic)
+	BSONPutTextField(m, q.Message)
 	return
 }
