@@ -63,7 +63,9 @@ func (q Query) Sort() string {
 // ToMatch convert to bson.M for query match
 func (q Query) ToMatch() (m bson.M) {
 	m = bson.M{}
-	m["timestamp"] = q.Timestamp.ToMatch()
+	if !q.Timestamp.IsFullDay() {
+		m["timestamp"] = q.Timestamp.ToMatch()
+	}
 	BSONPutMatchField(m, "crid", q.Crid)
 	BSONPutMatchField(m, "hostname", q.Hostname)
 	BSONPutMatchField(m, "env", q.Env)

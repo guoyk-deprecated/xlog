@@ -12,6 +12,15 @@ type Period struct {
 	Ascendant bool      `json:"ascendant" bson:"-"`  // timestamp ascendant, default to false
 }
 
+// IsFullDay check if period is a full day
+func (p Period) IsFullDay() bool {
+	if p.Beginning.Hour() == 0 && p.Beginning.Minute() == 0 && p.Beginning.Second() == 0 {
+		diff := p.End.Sub(p.Beginning)
+		return diff == time.Hour*24 || diff == (time.Hour*24-time.Second)
+	}
+	return false
+}
+
 // TrendPeriods trend trend periods
 func (p Period) TrendPeriods() (ret []Period) {
 	ret = make([]Period, 0)
