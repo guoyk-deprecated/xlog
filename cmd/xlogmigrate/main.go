@@ -16,6 +16,20 @@ var (
 	options xlog.Options
 )
 
+// Progress is the progress counter
+type Progress struct {
+	Total int
+	Count int
+}
+
+// Increase the counter
+func (p *Progress) Increase() {
+	p.Count++
+	if p.Count%1000 == 0 {
+		log.Printf("Progress: %10d/%10d", p.Count, p.Total)
+	}
+}
+
 func main() {
 	var err error
 	flag.StringVar(&date, "date", "", "date to process, for example '20180720'")
@@ -57,32 +71,46 @@ func main() {
 		log.Println("failed to dial elasticsearch,", err)
 	}
 
-	var r xlog.Record
-	it := coll.Find(bson.M{}).Sort("timestamp").Batch(1000).Prefetch(0.25).Skip(skip).Iter()
+	p := &Progress{Total: total, Count: skip}
 
-	var count = skip
+	it := coll.Find(bson.M{}).Sort("timestamp").Batch(1000).Prefetch(0.25).Skip(skip).Iter()
+	defer it.Close()
+
+	r := xlog.Record{}
+	rs := make([]xlog.Record, 0)
+
+	// main loop
 	for {
+		// clear the variable
+		r = xlog.Record{}
+		// request for the next
 		if !it.Next(&r) {
-			// other error, break
+			// other error, return
 			if err = it.Err(); err != nil {
 				log.Println("failed to iterate,", err)
+				return
 			}
+			// break for final Next()
 			break
 		}
-		// save id for debug
-		id := r.ID
-		// clear ID
-		r.ID = ""
-		// insert
-		if err = eo.Insert(r); err != nil {
-			log.Println("failed to insert", id, err)
-			break
-		}
-		// increase count and update percentage
-		count++
-		if count%1000 == 0 {
-			log.Printf("Progress: %10d/%10d", count, total)
+		// increase progress
+		p.Increase()
+		// append to rs
+		rs = append(rs, r)
+		// if rs >= 1000, do the bulk insertion
+		if len(rs) >= 1000 {
+			// do bulk insertion
+			if err = eo.BulkInsert(rs); err != nil {
+				log.Println("failed to insert", err)
+				return
+			}
+			// clear and reuse the rs
+			rs = rs[:0]
 		}
 	}
-	it.Close()
+	// insert the rest
+	if err = eo.BulkInsert(rs); err != nil {
+		log.Println("failed to insert", err)
+		return
+	}
 }
