@@ -32,11 +32,16 @@ func (e *ElasticSearch) IndexName(r xlog.Record) string {
 // Insert insert a record
 func (e *ElasticSearch) Insert(rc xlog.RecordConvertible) (err error) {
 	var r xlog.Record
+	// convert to xlog.Record
 	if r, err = rc.ToRecord(); err != nil {
 		return
 	}
+	// save index name
+	name := e.IndexName(r)
+	// update timestamp due to time zone offset
 	r.Timestamp = r.Timestamp.Add(time.Hour * time.Duration(e.TimeOffset))
-	_, err = e.Client.Index().Index(e.IndexName(r)).Type("_doc").BodyJson(&r).Do(context.Background())
+	// insert document, _doc is the standard document type
+	_, err = e.Client.Index().Index(name).Type("_doc").BodyJson(&r).Do(context.Background())
 	return
 }
 

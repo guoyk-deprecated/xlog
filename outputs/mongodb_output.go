@@ -44,6 +44,9 @@ func DialMongoDB(opt xlog.Options) (db *MongoDB, err error) {
 	if session, err = mgo.DialWithInfo(di); err != nil {
 		return
 	}
+	if opt.Mongo.Tough {
+		session.SetCursorTimeout(0)
+	}
 	// wrap
 	db = &MongoDB{
 		DB:               session.DB(opt.Mongo.DB),

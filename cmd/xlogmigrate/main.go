@@ -11,6 +11,7 @@ import (
 
 var (
 	date string
+	skip int
 
 	options xlog.Options
 )
@@ -18,6 +19,7 @@ var (
 func main() {
 	var err error
 	flag.StringVar(&date, "date", "", "date to process, for example '20180720'")
+	flag.IntVar(&skip, "skip", 0, "skip records")
 	if err = xlog.ParseOptionsFlag(&options); err != nil {
 		log.Println("invalid config,", err)
 		return
@@ -28,6 +30,9 @@ func main() {
 		log.Println("invalid date,", err)
 		return
 	}
+
+	// force tough mode
+	options.Mongo.Tough = true
 
 	var mo *outputs.MongoDB
 	if mo, err = outputs.DialMongoDB(options); err != nil {
@@ -53,11 +58,12 @@ func main() {
 	}
 
 	var r xlog.Record
-	it := coll.Find(bson.M{}).Iter()
+	it := coll.Find(bson.M{}).Sort("timestamp").Batch(1000).Prefetch(0.25).Skip(skip).Iter()
 
-	var count int
+	var count = skip
 	for {
 		if !it.Next(&r) {
+			// other error, break
 			if err = it.Err(); err != nil {
 				log.Println("failed to iterate,", err)
 			}
@@ -78,4 +84,5 @@ func main() {
 			log.Printf("Progress: %10d/%10d", count, total)
 		}
 	}
+	it.Close()
 }
