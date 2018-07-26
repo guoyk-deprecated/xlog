@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/yankeguo/xlog"
+	"github.com/yankeguo/xlog/outputs"
 )
 
 var (
@@ -33,8 +34,8 @@ func main() {
 	options.Mongo.Tough = true
 
 	// create client
-	var db *xlog.Database
-	if db, err = xlog.DialDatabase(options); err != nil {
+	var db *outputs.MongoDB
+	if db, err = outputs.DialMongoDB(options); err != nil {
 		panic(err)
 	}
 

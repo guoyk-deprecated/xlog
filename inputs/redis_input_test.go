@@ -15,7 +15,7 @@ const testSampleBeatJSON = `{
 }`
 
 func TestRedisInput_All(t *testing.T) {
-	ri, err := DialRedisInput("redis://localhost:6379", "xlog.test")
+	ri, err := DialRedis("redis://localhost:6379", "xlog.test")
 	if err != nil {
 		t.Fatal(err)
 	}

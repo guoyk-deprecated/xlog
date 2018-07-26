@@ -11,6 +11,7 @@ import (
 
 	"github.com/globalsign/mgo/bson"
 	"github.com/yankeguo/xlog"
+	"github.com/yankeguo/xlog/outputs"
 )
 
 var (
@@ -33,8 +34,8 @@ func main() {
 		return
 	}
 
-	var db *xlog.Database
-	if db, err = xlog.DialDatabase(options); err != nil {
+	var db *outputs.MongoDB
+	if db, err = outputs.DialMongoDB(options); err != nil {
 		log.Println("failed to dial mongodb,", err)
 		return
 	}

@@ -9,14 +9,14 @@ import (
 	"github.com/yankeguo/xlog"
 )
 
-// RedisInput a redis client wrapper for filebeat events
-type RedisInput struct {
+// Redis a redis client wrapper for filebeat events
+type Redis struct {
 	Client *redis.Client
 	Key    string // LIST key for BLPOP
 }
 
-// DialRedisInput dial a redis and create *RedisInput
-func DialRedisInput(url string, key string) (b *RedisInput, err error) {
+// DialRedis dial a redis and create *Redis
+func DialRedis(url string, key string) (b *Redis, err error) {
 	var opt *redis.Options
 	// parse redis.Options
 	if opt, err = redis.ParseURL(url); err != nil {
@@ -27,17 +27,17 @@ func DialRedisInput(url string, key string) (b *RedisInput, err error) {
 	if err = client.Ping().Err(); err != nil {
 		return
 	}
-	b = &RedisInput{Client: client, Key: key}
+	b = &Redis{Client: client, Key: key}
 	return
 }
 
 // Close close the underlying redis client
-func (b *RedisInput) Close() error {
+func (b *Redis) Close() error {
 	return b.Client.Close()
 }
 
 // Next fetch next event, nil for timeout, or JSON unmarshal error
-func (b *RedisInput) Next() (r xlog.RecordConvertible, err error) {
+func (b *Redis) Next() (r xlog.RecordConvertible, err error) {
 	var ret []string
 	// BLPOP
 	if ret, err = b.Client.BLPop(time.Second*3, b.Key).Result(); err != nil {
@@ -65,7 +65,7 @@ func (b *RedisInput) Next() (r xlog.RecordConvertible, err error) {
 }
 
 // Recover requeue a beat entry with RPUSH
-func (b *RedisInput) Recover(r xlog.RecordConvertible) (err error) {
+func (b *Redis) Recover(r xlog.RecordConvertible) (err error) {
 	// check if it's a BeatEvent
 	var be BeatEvent
 	var ok bool

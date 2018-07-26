@@ -11,6 +11,7 @@ import (
 
 	"github.com/yankeguo/xlog"
 	"github.com/yankeguo/xlog/inputs"
+	"github.com/yankeguo/xlog/outputs"
 )
 
 var (
@@ -67,18 +68,24 @@ func inputRoutine(idx int) (err error) {
 	// maintain shutdown group
 	shutdownGroup.Add(1)
 	defer shutdownGroup.Done()
-	// redis input
-	var ri inputs.Input
-	if ri, err = inputs.DialRedisInput(options.Redis.URLs[idx], options.Redis.Key); err != nil {
+	// input
+	var xi inputs.Input
+	if xi, err = inputs.DialRedis(options.Redis.URLs[idx], options.Redis.Key); err != nil {
 		return
 	}
-	defer ri.Close()
-	// database
-	var db *xlog.Database
-	if db, err = xlog.DialDatabase(options); err != nil {
-		return
+	defer xi.Close()
+	// output
+	var xo outputs.Output
+	if options.Mongo.Enabled {
+		if xo, err = outputs.DialMongoDB(options); err != nil {
+			return
+		}
+	} else {
+		if xo, err = outputs.DialElasticSearch(options); err != nil {
+			return
+		}
 	}
-	defer db.Close()
+	defer xo.Close()
 	// main loop
 	for {
 		// check shutdown flag, clear err
@@ -87,7 +94,7 @@ func inputRoutine(idx int) (err error) {
 		}
 		// read next event
 		var rc xlog.RecordConvertible
-		if rc, err = ri.Next(); err != nil {
+		if rc, err = xi.Next(); err != nil {
 			// redis went wrong, stop input routine
 			return
 		}
@@ -96,10 +103,10 @@ func inputRoutine(idx int) (err error) {
 			continue
 		}
 		// insert document
-		if err = db.Insert(rc); err != nil {
+		if err = xo.Insert(rc); err != nil {
 			// recover with RPUSH and return, unless it's a conversion error
 			if !xlog.IsRecordConversionError(err) {
-				ri.Recover(rc)
+				xi.Recover(rc)
 				// stop on failed
 				return
 			}

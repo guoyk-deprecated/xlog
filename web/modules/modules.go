@@ -3,14 +3,15 @@ package modules
 import (
 	"github.com/novakit/nova"
 	"github.com/yankeguo/xlog"
+	"github.com/yankeguo/xlog/outputs"
 )
 
 // Handler create nova.HandlerFunc, injects modules
 func Handler(opt xlog.Options) nova.HandlerFunc {
 	var err error
-	var db *xlog.Database
+	var db *outputs.MongoDB
 	// panic if failed to dial database
-	if db, err = xlog.DialDatabase(opt); err != nil {
+	if db, err = outputs.DialMongoDB(opt); err != nil {
 		panic(err)
 	}
 	return func(c *nova.Context) (err error) {

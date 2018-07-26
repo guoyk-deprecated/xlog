@@ -15,6 +15,8 @@ type Options struct {
 	Redis RedisOptions `yaml:"redis"`
 	// Mongo mongo options
 	Mongo MongoOptions `yaml:"mongo"`
+	// ES ES options
+	ES ESOptions `yaml:"es"`
 	// Web web options
 	Web WebOptions `yaml:"web"`
 	// Verbose verbose mode
@@ -41,6 +43,8 @@ type RedisOptions struct {
 
 // MongoOptions mongo options
 type MongoOptions struct {
+	// Enabled
+	Enabled bool `yaml:"enabled"`
 	// URL mongo url
 	URL string `yaml:"url"`
 	// DB mongo db name
@@ -49,6 +53,12 @@ type MongoOptions struct {
 	Collection string `yaml:"collection"`
 	// Tough no timeout
 	Tough bool `yaml:"tough"`
+}
+
+// ESOptions es options
+type ESOptions struct {
+	TimeOffset int      `yaml:"time_offset"`
+	URLs       []string `yaml:"urls"`
 }
 
 // WebOptions web options

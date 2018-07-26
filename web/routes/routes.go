@@ -4,7 +4,7 @@ import (
 	"github.com/novakit/nova"
 	"github.com/novakit/router"
 	"github.com/novakit/view"
-	"github.com/yankeguo/xlog"
+	"github.com/yankeguo/xlog/outputs"
 	"github.com/yankeguo/xlog/web/modules"
 )
 
@@ -22,7 +22,7 @@ func V(c *nova.Context) *view.View {
 	return view.Extract(c)
 }
 
-// D short-hand for modules.Database(c)
-func D(c *nova.Context) *xlog.Database {
+// D short-hand for modules.MongoDB(c)
+func D(c *nova.Context) *outputs.MongoDB {
 	return modules.Database(c)
 }

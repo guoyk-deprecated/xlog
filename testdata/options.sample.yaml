@@ -5,9 +5,14 @@ redis:
     - 'redis://127.0.0.1:6379'
   key: 'xlog'
 mongo:
+  enabled: false
   url: 'mongodb://127.0.0.1:27017'
   db: 'xlog'
   collection: 'xlog'
+es:
+  time_offset: 8
+  urls:
+    - 'http://127.0.0.1:9200'
 web:
   host: '127.0.0.1'
   port: 4000

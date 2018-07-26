@@ -1,4 +1,4 @@
-package xlog
+package outputs
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 
 	"github.com/globalsign/mgo"
 	"github.com/globalsign/mgo/bson"
+	"github.com/yankeguo/xlog"
 )
 
 // QueryLimit limit of result returned
@@ -19,16 +20,16 @@ var (
 	TextIndexedFields = []string{"message"}
 )
 
-// Database is a wrapper of mgo.Database
-type Database struct {
+// MongoDB is a wrapper of mgo.MongoDB
+type MongoDB struct {
 	DB *mgo.Database
 
 	// CollectionPrefix prefix of collections in database
 	CollectionPrefix string
 }
 
-// DialDatabase connect a mongo database with options
-func DialDatabase(opt Options) (db *Database, err error) {
+// DialMongoDB connect a mongo database with options
+func DialMongoDB(opt xlog.Options) (db *MongoDB, err error) {
 	// parse url
 	var di *mgo.DialInfo
 	if di, err = mgo.ParseURL(opt.Mongo.URL); err != nil {
@@ -44,7 +45,7 @@ func DialDatabase(opt Options) (db *Database, err error) {
 		return
 	}
 	// wrap
-	db = &Database{
+	db = &MongoDB{
 		DB:               session.DB(opt.Mongo.DB),
 		CollectionPrefix: opt.Mongo.Collection,
 	}
@@ -52,23 +53,24 @@ func DialDatabase(opt Options) (db *Database, err error) {
 }
 
 // Close close the underlying session
-func (d *Database) Close() {
+func (d *MongoDB) Close() error {
 	d.DB.Session.Close()
+	return nil
 }
 
 // CollectionName get collection name by date
-func (d *Database) CollectionName(t time.Time) string {
+func (d *MongoDB) CollectionName(t time.Time) string {
 	return fmt.Sprintf("%s%04d%02d%02d", d.CollectionPrefix, t.Year(), t.Month(), t.Day())
 }
 
 // Collection get collection by date
-func (d *Database) Collection(t time.Time) *mgo.Collection {
+func (d *MongoDB) Collection(t time.Time) *mgo.Collection {
 	return d.DB.C(d.CollectionName(t))
 }
 
 // Insert insert a RecordConvertible, choose collection automatically
-func (d *Database) Insert(rc RecordConvertible) (err error) {
-	var r Record
+func (d *MongoDB) Insert(rc xlog.RecordConvertible) (err error) {
+	var r xlog.Record
 	if r, err = rc.ToRecord(); err != nil {
 		return
 	}
@@ -76,15 +78,15 @@ func (d *Database) Insert(rc RecordConvertible) (err error) {
 }
 
 // Search execute a query
-func (d *Database) Search(q Query) (ret Result, err error) {
+func (d *MongoDB) Search(q xlog.Query) (ret xlog.Result, err error) {
 	coll := d.Collection(q.Timestamp.Beginning)
 	// find
-	var records []Record
+	var records []xlog.Record
 	if err = coll.Find(q.ToMatch()).Sort(q.Sort()).Skip(q.Skip).Limit(QueryLimit).SetMaxTime(time.Second * 45).All(&records); err != nil {
 		return
 	}
 	if records == nil {
-		records = []Record{}
+		records = []xlog.Record{}
 	}
 	// build result
 	ret.Records = records
@@ -93,17 +95,17 @@ func (d *Database) Search(q Query) (ret Result, err error) {
 }
 
 // Trends calculate trends from a query
-func (d *Database) Trends(q Query) (rs []Trend, err error) {
+func (d *MongoDB) Trends(q xlog.Query) (rs []xlog.Trend, err error) {
 	coll := d.Collection(q.Timestamp.Beginning)
 	// trend queries
 	qs := q.TrendQueries()
-	rs = make([]Trend, 0, len(qs))
+	rs = make([]xlog.Trend, 0, len(qs))
 	for _, tq := range qs {
 		var c int
 		if c, err = coll.Find(tq.ToMatch()).SetMaxTime(time.Second * 10).Count(); err != nil {
 			return
 		}
-		rs = append(rs, Trend{
+		rs = append(rs, xlog.Trend{
 			Beginning: tq.Timestamp.Beginning,
 			End:       tq.Timestamp.End,
 			Count:     c,
@@ -113,7 +115,7 @@ func (d *Database) Trends(q Query) (rs []Trend, err error) {
 }
 
 // EnableSharding enable sharding on collection of the day
-func (d *Database) EnableSharding(t time.Time) error {
+func (d *MongoDB) EnableSharding(t time.Time) error {
 	return d.DB.Run(bson.D{
 		{
 			Name:  "shardCollection",
@@ -127,7 +129,7 @@ func (d *Database) EnableSharding(t time.Time) error {
 }
 
 // EnsureIndexes ensure indexes for collection of the day
-func (d *Database) EnsureIndexes(t time.Time) (err error) {
+func (d *MongoDB) EnsureIndexes(t time.Time) (err error) {
 	coll := d.Collection(t)
 	// plain indexes
 	for _, field := range PlainIndexedFields {
