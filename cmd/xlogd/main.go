@@ -80,10 +80,12 @@ func inputRoutine(idx int) (err error) {
 		if xo, err = outputs.DialMongoDB(options); err != nil {
 			return
 		}
+		log.Println("using mongodb")
 	} else {
 		if xo, err = outputs.DialElasticSearch(options); err != nil {
 			return
 		}
+		log.Println("using elasticsearch")
 	}
 	defer xo.Close()
 	// main loop
