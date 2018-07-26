@@ -10,7 +10,7 @@ mongo:
   db: 'xlog'
   collection: 'xlog'
 es:
-  time_offset: 8
+  time_offset: -8
   urls:
     - 'http://127.0.0.1:9200'
 web:

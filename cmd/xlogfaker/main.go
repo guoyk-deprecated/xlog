@@ -13,10 +13,13 @@ import (
 	"log"
 	"math/rand"
 	"time"
+	"flag"
 )
 
 var (
 	options xlog.Options
+
+	steady bool
 
 	redisClients = make(map[int]*redis.Client)
 
@@ -36,6 +39,7 @@ func strSliceRandVal(ss []string) string {
 func main() {
 	// options flag
 	var err error
+	flag.BoolVar(&steady, "steady", false, "steady mode,")
 	if err = xlog.ParseOptionsFlag(&options); err != nil {
 		panic(err)
 	}
@@ -80,7 +84,12 @@ func main() {
 		crid := make([]byte, 8)
 		rand.Read(crid)
 		cridStr := hex.EncodeToString(crid)
-		dateStr := time.Now().Add(time.Second * time.Duration(900-rand.Intn(600))).Format("2006/01/02 15:04:05.000")
+		var dateStr string
+		if steady {
+			dateStr = time.Now().Format("2006/01/02 15:04:05.000")
+		} else {
+			dateStr = time.Now().Add(time.Second * time.Duration(900-rand.Intn(600))).Format("2006/01/02 15:04:05.000")
+		}
 		// create beat event
 		be := inputs.BeatEvent{
 			Beat: inputs.BeatInfo{
